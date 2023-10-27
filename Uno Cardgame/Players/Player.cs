@@ -9,9 +9,9 @@ public class Player
     public List<Card> Hand = new List<Card>();
     public int Points = 0;
     
-    public Player(int id)
+    public Player(string name)
     {
-        Name = "Player " + id;
+        Name = name;
     }
 
     public void getHand()

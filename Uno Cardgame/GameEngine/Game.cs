@@ -52,6 +52,10 @@ public class Game
                 Console.WriteLine(player.Name + " is a winner!");
                 Console.WriteLine("Counting Points...");
                 Thread.Sleep(5000);
+                Console.WriteLine("Dealing cards");
+                Thread.Sleep(2000);
+                _deck.SetUpDeck();
+                DealCard();
                 return player;
             }
         }
@@ -389,7 +393,10 @@ public class Game
     {
         for (int i = 0; i < _playerAmount; i++)
         {
-            _players.Add(new Player(i + 1));
+            Console.Write("Type player name for " + (i + 1) + " player: ");
+            var newPlayerName = Console.ReadLine().Trim();
+            _players.Add(new Player(newPlayerName));
+            Console.WriteLine();
         }
 
         return _players;
