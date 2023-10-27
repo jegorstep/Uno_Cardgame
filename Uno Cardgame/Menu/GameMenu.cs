@@ -104,7 +104,7 @@ public class GameMenu
                     Console.Clear();
                     Console.WriteLine("1)Official");
                     Console.WriteLine("2)Custom");
-                    Console.WriteLine("Choose game type : ");
+                    Console.WriteLine("Choose game type (Right now this feature doesn't work and game will always be official) : ");
                     
                     var input = Console.ReadLine()?.Trim();
                     

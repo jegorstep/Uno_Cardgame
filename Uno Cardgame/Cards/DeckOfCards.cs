@@ -3,7 +3,8 @@
 public class DeckOfCards : Card
 {
     private const int NumberOfCards = 108;
-    public Stack<Card> GetDeck { get; } = new Stack<Card>();
+    public Stack<Card> GetDeck { get; set; } = new Stack<Card>();
+    
     
     
     

@@ -5,9 +5,9 @@ namespace Players;
 public class Player
 {
 
-    public bool IsActive = false;
     public string Name;
     public List<Card> Hand = new List<Card>();
+    public int Points = 0;
     
     public Player(int id)
     {
