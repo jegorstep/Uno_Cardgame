@@ -32,18 +32,15 @@ public class Game
             Console.Write("Card on discard pile is: ");
             Console.WriteLine(_lastCardOnDiscardPile.ToString());
             PlayerAction();
-            Player player = CheckHands();
-            if (CountPoints(player))
+            if (CheckHands())
             {
-                Console.WriteLine("See ya, suckers!");
-                Thread.Sleep(2000);
-                break;   
+                break;
             }
         }
     }
 
 
-    private Player CheckHands()
+    private bool CheckHands()
     {
         foreach (var player in _players)
         {
@@ -52,15 +49,20 @@ public class Game
                 Console.WriteLine(player.Name + " is a winner!");
                 Console.WriteLine("Counting Points...");
                 Thread.Sleep(5000);
+                if (CountPoints(player))
+                {
+                    Console.WriteLine("See ya, suckers!");
+                    Thread.Sleep(2000);
+                    return true;
+                }
                 Console.WriteLine("Dealing cards");
                 Thread.Sleep(2000);
                 _deck.SetUpDeck();
                 DealCard();
-                return player;
             }
         }
 
-        return null;
+        return false;
     }
 
     private bool CountPoints(Player? player)
@@ -98,10 +100,12 @@ public class Game
         if (player.Points >= 500)
         {
             Console.WriteLine(player + " WON THE GAME, CONGRATULATIONS!");
+            Thread.Sleep(2000);
         }
         else
         {
             Console.WriteLine(player.Name + " has " + player.Points + " points!");
+            Thread.Sleep(2000);
         }
         return false;
     }
@@ -382,6 +386,7 @@ public class Game
     {
         foreach (var gamePlayer in _players)
         {
+            gamePlayer.Hand.Clear();
             for (int j = 0; j != 7; j++)
             {
                 gamePlayer.Hand.Add(_deck.GetDeck.Pop());
