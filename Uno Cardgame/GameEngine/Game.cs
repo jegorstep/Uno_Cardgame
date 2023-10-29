@@ -29,40 +29,42 @@ public class Game
        
         while (true)
         {
+            Console.WriteLine("Your turn: " + _players[_indexOfActivePlayer].GetName());
             Console.Write("Card on discard pile is: ");
             Console.WriteLine(_lastCardOnDiscardPile.ToString());
             PlayerAction();
-            if (CheckHands())
+            Player player = CheckHands();
+            if (CountPoints(player))
             {
-                break;
+                Console.WriteLine("See ya, suckers!");
+                Console.WriteLine();
+                Console.WriteLine(">> T H E  E N D <<");
+                Console.WriteLine();
+                Thread.Sleep(2000);
+                break;   
             }
         }
     }
 
 
-    private bool CheckHands()
+    private Player CheckHands()
     {
         foreach (var player in _players)
         {
             if (player.Hand.Count == 0)
             {
-                Console.WriteLine(player.Name + " is a winner!");
+                Console.WriteLine(player.Name + " is a winner of this round!");
                 Console.WriteLine("Counting Points...");
                 Thread.Sleep(5000);
-                if (CountPoints(player))
-                {
-                    Console.WriteLine("See ya, suckers!");
-                    Thread.Sleep(2000);
-                    return true;
-                }
-                Console.WriteLine("Dealing cards");
+                Console.WriteLine("Dealing cards...");
                 Thread.Sleep(2000);
                 _deck.SetUpDeck();
                 DealCard();
+                return player;
             }
         }
 
-        return false;
+        return null;
     }
 
     private bool CountPoints(Player? player)
@@ -99,13 +101,12 @@ public class Game
 
         if (player.Points >= 500)
         {
-            Console.WriteLine(player + " WON THE GAME, CONGRATULATIONS!");
-            Thread.Sleep(2000);
+            Console.WriteLine(player.Name.ToUpper() + " WON THE GAME, CONGRATULATIONS!");
+            return true;
         }
         else
         {
             Console.WriteLine(player.Name + " has " + player.Points + " points!");
-            Thread.Sleep(2000);
         }
         return false;
     }
@@ -142,7 +143,7 @@ public class Game
         Card actionCard = null;
         Player player = _players[_indexOfActivePlayer];
         Console.Write("Your cards: ");
-        player.getHand();
+        player.GetHand();
         while (actionCard == null) // force player to choose right card
         {
             Console.WriteLine();
@@ -157,17 +158,15 @@ public class Game
                 {
                     if (card.CardColor != _lastCardOnDiscardPile.CardColor && card.CardValue != _lastCardOnDiscardPile.CardValue && card.CardColor != Card.Color.Wild)
                     {
-                        Console.WriteLine("Card is not playable, you skip turn, " + player.Name + " is sucker!");
+                        Console.WriteLine("Card is not playable, you skip turn, " + player.Name + " sucks!");
                         Thread.Sleep(2000);
                         player.Hand.Add(card);
-                        Console.WriteLine();
                     }
                     else
                     {
                         Console.WriteLine("Seems you found right card, you play card " + card);
                         Thread.Sleep(2000);
                         actionCard = card;
-                        Console.WriteLine();
                     }
                 }
                 else
@@ -208,7 +207,7 @@ public class Game
             player.Hand.Remove(actionCard);
             if (player.Hand.Count == 1)
             {
-                Console.WriteLine(player.Name + " S A Y S  U N O!");
+                Console.WriteLine(player.Name + " SAYS  U N O!");
             }
             if (actionCard.CardValue == Card.Value.Skip)
             {
@@ -280,6 +279,7 @@ public class Game
             Console.WriteLine("r) Red");
             Console.Write("Choose color: ");
             var input = Console.ReadLine().Trim();
+            Console.WriteLine();
             if (input.ToLower() == "y")
             {
                 actionCard.CardColor = Card.Color.Yellow;
@@ -357,11 +357,11 @@ public class Game
             {
                 possibleCardsToPlay.Add(card);
             }
-            else if (card.CardValue == Card.Value.Wild && card.CardColor == Card.Color.Wild)
+            else if (card.CardValue == Card.Value.Wild)
             {
                 possibleCardsToPlay.Add(card);
             }
-            else if (card.CardValue == Card.Value.WildDrawFour && card.CardColor == Card.Color.Wild)
+            else if (card.CardValue == Card.Value.WildDrawFour)
             {
                 WildDrawFourCards.Add(card);
             }
@@ -386,7 +386,6 @@ public class Game
     {
         foreach (var gamePlayer in _players)
         {
-            gamePlayer.Hand.Clear();
             for (int j = 0; j != 7; j++)
             {
                 gamePlayer.Hand.Add(_deck.GetDeck.Pop());
@@ -398,10 +397,10 @@ public class Game
     {
         for (int i = 0; i < _playerAmount; i++)
         {
+            Console.WriteLine();
             Console.Write("Type player name for " + (i + 1) + " player: ");
             var newPlayerName = Console.ReadLine().Trim();
             _players.Add(new Player(newPlayerName));
-            Console.WriteLine();
         }
 
         return _players;
@@ -414,6 +413,7 @@ public class Game
         var chosenPlayer = 0;
         while (true)
         {
+            Console.WriteLine();
             Console.WriteLine("Who plays first?");
             var x = 1;
             Console.WriteLine("r) Random");
@@ -424,7 +424,9 @@ public class Game
                 Console.WriteLine(player.Name);
             }
 
+            Console.Write("Answer: ");
             var input = Console.ReadLine().Trim();
+            Console.WriteLine();
             if (input.Equals("r"))
             {
                 chosenPlayer = rand.Next(_playerAmount);

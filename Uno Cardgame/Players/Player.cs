@@ -14,7 +14,12 @@ public class Player
         Name = name;
     }
 
-    public void getHand()
+    public string GetName()
+    {
+        return Name;
+    }
+
+    public void GetHand()
     {
         foreach (var card in Hand)
         {

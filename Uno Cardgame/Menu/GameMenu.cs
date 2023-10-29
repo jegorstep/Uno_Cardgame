@@ -76,8 +76,8 @@ public class GameMenu
                 Console.WriteLine("New Game");
                 Console.WriteLine(MenuSeparator);
                 Console.WriteLine("p) Play");
-                Console.WriteLine("n) Number of players (choose from 2 to 10) : " + Players);
-                Console.WriteLine("o) Official or custom : " + GameType);
+                Console.WriteLine("n) Number of players (choose from 2 to 10): " + Players);
+                Console.WriteLine("o) Official or custom: " + GameType);
                 Console.WriteLine("b) Back");
                 Console.WriteLine("x) eXit");
                 Console.WriteLine(MenuSeparator);
@@ -137,6 +137,7 @@ public class GameMenu
                             Players = integer;
                             Console.Clear();
                             Console.WriteLine("Player amount has been successfully changed!");
+                            Console.WriteLine();
                         }
                         else
                         {
