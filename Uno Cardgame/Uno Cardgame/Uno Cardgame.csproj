@@ -9,10 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Cards\Cards.csproj" />
-      <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
       <ProjectReference Include="..\Menu\Menu.csproj" />
-      <ProjectReference Include="..\Players\Players.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="savedGames\" />
     </ItemGroup>
 
 </Project>

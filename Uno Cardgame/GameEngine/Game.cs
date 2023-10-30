@@ -1,38 +1,70 @@
-﻿namespace GameEngine;
-using Players;
-using Cards;
+﻿using Domain;
+using DAL;
+namespace GameEngine;
+
 
 public class Game
 {
-    private bool _isReverse = false;
-    private int _indexOfActivePlayer;
-    private int _playerAmount;
-    private List<Player> _players = new List<Player>();
-    private DeckOfCards _deck = new DeckOfCards();
-    private List<Card> _discardPile = new List<Card>();
-    private Card _lastCardOnDiscardPile;
+    private GameRepositoryFileSystem _saveSystem = new GameRepositoryFileSystem();
+    private GameState _gameState = new GameState();
+    private bool exitGame = false;
+    private bool _isNewGame = true;
     
     public Game(int players)
     {
-        _playerAmount = players;
+        _gameState.PlayerAmount = players;
+    }
+
+    public Game(GameState gameState)
+    {
+        _gameState = gameState;
+        _isNewGame = false;
     }
 
     public void Run()
     {
-        _deck.SetUpDeck();
-        Console.WriteLine("Deal Cards..."); 
-        Thread.Sleep(2000);
-        CreatePlayers();
-        DealCard();
-        introducePlayers();
-        _lastCardOnDiscardPile = _deck.GetDeck.Pop();
-       
+        if (_isNewGame)
+        {
+            _gameState.Deck.SetUpDeck();
+            Console.Clear();
+            Console.Write("Deal Cards");
+            Thread.Sleep(800);
+            Console.Write(".");
+            Thread.Sleep(800);
+            Console.Write(".");
+            Thread.Sleep(800);
+            Console.Write(".");
+            Thread.Sleep(800);
+            Console.Clear();
+            CreatePlayers();
+            while (true) // deal with unwanted wild card as lastCardOnDiscardPile
+            {
+                _gameState.LastCardOnDiscardPile = _gameState.Deck.GetDeck.Peek();
+                if (_gameState.LastCardOnDiscardPile.CardColor != Card.Color.Wild)
+                {
+                    _gameState.LastCardOnDiscardPile = _gameState.Deck.GetDeck.Pop();
+                    break;
+                }
+
+                _gameState.Deck.SetUpDeck();
+            }
+
+            DealCard();
+            introducePlayers();
+        }
+
+        Console.Clear();
         while (true)
         {
-            Console.WriteLine("Your turn: " + _players[_indexOfActivePlayer].GetName());
+            Console.WriteLine("Your turn: " + _gameState.Players[_gameState.IndexOfActivePlayer].Name);
             Console.Write("Card on discard pile is: ");
-            Console.WriteLine(_lastCardOnDiscardPile.ToString());
+            Console.WriteLine(_gameState.LastCardOnDiscardPile.ToString());
             PlayerAction();
+            if (exitGame)
+            {
+                exitGame = false;
+                break;
+            }
             Player player = CheckHands();
             if (CountPoints(player))
             {
@@ -49,16 +81,18 @@ public class Game
 
     private Player CheckHands()
     {
-        foreach (var player in _players)
+        foreach (var player in _gameState.Players)
         {
             if (player.Hand.Count == 0)
             {
                 Console.WriteLine(player.Name + " is a winner of this round!");
+                Console.WriteLine();
                 Console.WriteLine("Counting Points...");
                 Thread.Sleep(5000);
                 Console.WriteLine("Dealing cards...");
                 Thread.Sleep(2000);
-                _deck.SetUpDeck();
+                Console.WriteLine();
+                _gameState.Deck.SetUpDeck();
                 DealCard();
                 return player;
             }
@@ -74,7 +108,7 @@ public class Game
         {
             return false;
         }
-        foreach (var opponent in _players)
+        foreach (var opponent in _gameState.Players)
         {
             if (!player.Equals(opponent))
             {
@@ -99,14 +133,16 @@ public class Game
             }
         }
 
-        if (player.Points >= 500)
+        if (player.Points >= _gameState.PointsToWin)
         {
             Console.WriteLine(player.Name.ToUpper() + " WON THE GAME, CONGRATULATIONS!");
             return true;
         }
         else
         {
-            Console.WriteLine(player.Name + " has " + player.Points + " points!");
+            Console.WriteLine();
+            Console.WriteLine(player.Name + " has now " + player.Points + " points!");
+            Console.WriteLine();
         }
         return false;
     }
@@ -131,19 +167,19 @@ public class Game
     
     private void PlayerAction()
     {
-        if (_indexOfActivePlayer >= _playerAmount)
+        if (_gameState.IndexOfActivePlayer >= _gameState.PlayerAmount)
         {
-            _indexOfActivePlayer = 0;
+            _gameState.IndexOfActivePlayer = 0;
         }
-        else if (_indexOfActivePlayer < 0)
+        else if (_gameState.IndexOfActivePlayer < 0)
         {
-            _indexOfActivePlayer = _playerAmount - 1;
+            _gameState.IndexOfActivePlayer = _gameState.PlayerAmount - 1;
         }
 
         Card actionCard = null;
-        Player player = _players[_indexOfActivePlayer];
+        Player player = _gameState.Players[_gameState.IndexOfActivePlayer];
         Console.Write("Your cards: ");
-        player.GetHand();
+        player.GetHandInString();
         while (actionCard == null) // force player to choose right card
         {
             Console.WriteLine();
@@ -154,9 +190,10 @@ public class Game
                 Console.WriteLine("It seems you don't have moves, you take card...");
                 Thread.Sleep(2000);
                 Card card;
-                if (_deck.GetDeck.TryPop(out card))
+                if (_gameState.Deck.GetDeck.TryPop(out card))
                 {
-                    if (card.CardColor != _lastCardOnDiscardPile.CardColor && card.CardValue != _lastCardOnDiscardPile.CardValue && card.CardColor != Card.Color.Wild)
+                    if (card.CardColor != _gameState.LastCardOnDiscardPile.CardColor 
+                        && card.CardValue != _gameState.LastCardOnDiscardPile.CardValue && card.CardColor != Card.Color.Wild)
                     {
                         Console.WriteLine("Card is not playable, you skip turn, " + player.Name + " sucks!");
                         Thread.Sleep(2000);
@@ -172,15 +209,35 @@ public class Game
                 else
                 {
                     RefreshDeckOfCards();
-                    actionCard = _deck.GetDeck.Pop();
+                    actionCard = _gameState.Deck.GetDeck.Pop();
                 }
                 break;
             }
             Console.WriteLine();
+            Console.WriteLine("s) Save Game");
+            Console.WriteLine("x) Exit Game");
             Console.Write(player.Name + " choose card you want to play: ");
-            var chosenCardIndex = Console.ReadLine().Trim();
+            
             var chosenIndexInt = 0;
-            if (int.TryParse(chosenCardIndex, out chosenIndexInt)) // User must choose card index from 1 to ...
+            var chosenCardIndex = Console.ReadLine().Trim();
+            if (chosenCardIndex.ToLower() == "s")
+            {
+                Console.Write("Choose name of save: ");
+                var saveName = Console.ReadLine().Trim();
+                Console.WriteLine();
+                var fileName = _saveSystem.SaveGame(saveName, _gameState);
+                var path = Path.Combine(Path.GetTempPath(), "savedGames");
+                StreamWriter writer = new StreamWriter(Path.Combine(Path.GetTempPath(), "saved_games.txt"), true);
+                writer.WriteLine(fileName);
+                writer.Close();
+                Console.WriteLine("Game have been saved successfully!");
+            }
+            else if (chosenCardIndex.ToLower() == "x")
+            {
+                exitGame = true;
+                break; 
+            }
+            else if (int.TryParse(chosenCardIndex, out chosenIndexInt)) // User must choose card index from 1 to ...
             {
                 if (chosenIndexInt >= 1 && chosenIndexInt <= possibleMoves.Count)
                 {
@@ -202,8 +259,7 @@ public class Game
     {
         if (actionCard != null)
         {
-            _discardPile.Add(_lastCardOnDiscardPile);
-            _lastCardOnDiscardPile = actionCard;
+            _gameState.LastCardOnDiscardPile = actionCard;
             player.Hand.Remove(actionCard);
             if (player.Hand.Count == 1)
             {
@@ -215,11 +271,11 @@ public class Game
             }
             else if (actionCard.CardValue == Card.Value.Reverse)
             {
-                if (_playerAmount == 2)
+                if (_gameState.PlayerAmount == 2)
                 {
                     SkipPlayer();
                 }
-                _isReverse = !_isReverse;
+                _gameState.IsReverse = !_gameState.IsReverse;
             }
             else if (actionCard.CardValue == Card.Value.DrawTwo)
             {
@@ -245,19 +301,20 @@ public class Game
     private void RefreshDeckOfCards()
     {
         List<Card> cardsRemainedInGame = new List<Card>(); // action card + all players cards
-        foreach (var player in _players)
+        foreach (var player in _gameState.Players)
         {
             foreach (var card in player.Hand)
             {
                 cardsRemainedInGame.Add(card);
             }
         }
-        cardsRemainedInGame.Add(_lastCardOnDiscardPile);
-        _deck.SetUpDeck();
+
+        cardsRemainedInGame.Add(_gameState.LastCardOnDiscardPile);
+        _gameState.Deck.SetUpDeck();
 
         Card cardForNewStack;
         Stack<Card> newStack = new Stack<Card>();
-        while (_deck.GetDeck.TryPeek(out cardForNewStack))
+        while (_gameState.Deck.GetDeck.TryPeek(out cardForNewStack))
         {
             if (!cardsRemainedInGame.Contains(cardForNewStack))
             {
@@ -265,7 +322,7 @@ public class Game
             }
         }
 
-        _deck.GetDeck = newStack;
+        _gameState.Deck.GetDeck = newStack;
     }
 
 
@@ -285,25 +342,22 @@ public class Game
                 actionCard.CardColor = Card.Color.Yellow;
                 break;
             }
-            else if (input.ToLower() == "g")
+            if (input.ToLower() == "g")
             {
                 actionCard.CardColor = Card.Color.Green;
                 break;
             }
-            else if (input.ToLower() == "b")
+            if (input.ToLower() == "b")
             {
                 actionCard.CardColor = Card.Color.Blue;
                 break;
             }
-            else if (input.ToLower() == "r")
+            if (input.ToLower() == "r")
             {
                 actionCard.CardColor = Card.Color.Red;
                 break;
             }
-            else
-            {
-                Console.WriteLine("Try again, sucker!");
-            }
+            Console.WriteLine("Try again, sucker!");
         }
     }
 
@@ -311,35 +365,35 @@ public class Game
     private void DrawTwo()
     {
         Card card1 = null;
-        if (_deck.GetDeck.TryPop(out card1))
+        if (_gameState.Deck.GetDeck.TryPop(out card1))
         {
-            _players[_indexOfActivePlayer].Hand.Add(card1);
+            _gameState.Players[_gameState.IndexOfActivePlayer].Hand.Add(card1);
         }
         Card card2 = null;
-        if (_deck.GetDeck.TryPop(out card2))
+        if (_gameState.Deck.GetDeck.TryPop(out card2))
         {
-            _players[_indexOfActivePlayer].Hand.Add(card2);
+            _gameState.Players[_gameState.IndexOfActivePlayer].Hand.Add(card2);
         }
     }
 
     private void SkipPlayer()
     {
-        if (_isReverse)
+        if (_gameState.IsReverse)
         {
-            _indexOfActivePlayer--;
+            _gameState.IndexOfActivePlayer--;
         }
         else
         {
-            _indexOfActivePlayer++;
+            _gameState.IndexOfActivePlayer++;
         }
         
-        if (_indexOfActivePlayer >= _playerAmount)
+        if (_gameState.IndexOfActivePlayer >= _gameState.PlayerAmount)
         {
-            _indexOfActivePlayer = 0;
+            _gameState.IndexOfActivePlayer = 0;
         }
-        else if (_indexOfActivePlayer < 0)
+        else if (_gameState.IndexOfActivePlayer < 0)
         {
-            _indexOfActivePlayer = _playerAmount - 1;
+            _gameState.IndexOfActivePlayer = _gameState.PlayerAmount - 1;
         }
     }
 
@@ -349,11 +403,11 @@ public class Game
         List<Card> WildDrawFourCards = new List<Card>();
         foreach (var card in playerHand)
         {
-            if (card.CardColor.Equals(_lastCardOnDiscardPile.CardColor))
+            if (card.CardColor.Equals(_gameState.LastCardOnDiscardPile.CardColor))
             {
                 possibleCardsToPlay.Add(card);
             }
-            else if (card.CardValue.Equals(_lastCardOnDiscardPile.CardValue))
+            else if (card.CardValue.Equals(_gameState.LastCardOnDiscardPile.CardValue))
             {
                 possibleCardsToPlay.Add(card);
             }
@@ -384,26 +438,27 @@ public class Game
     
     private void DealCard()
     {
-        foreach (var gamePlayer in _players)
+        foreach (var gamePlayer in _gameState.Players)
         {
-            for (int j = 0; j != 7; j++)
+            gamePlayer.Hand.Clear();
+            for (int j = 0; j != _gameState.MaxCardsInHand; j++)
             {
-                gamePlayer.Hand.Add(_deck.GetDeck.Pop());
+                gamePlayer.Hand.Add(_gameState.Deck.GetDeck.Pop());
             }
         }
     }
 
     private List<Player> CreatePlayers()
     {
-        for (int i = 0; i < _playerAmount; i++)
+        for (int i = 0; i < _gameState.PlayerAmount; i++)
         {
-            Console.WriteLine();
             Console.Write("Type player name for " + (i + 1) + " player: ");
             var newPlayerName = Console.ReadLine().Trim();
-            _players.Add(new Player(newPlayerName));
+            _gameState.Players.Add(new Player(newPlayerName));
+            Console.WriteLine();
         }
 
-        return _players;
+        return _gameState.Players;
     }
 
     private void introducePlayers()
@@ -413,11 +468,10 @@ public class Game
         var chosenPlayer = 0;
         while (true)
         {
-            Console.WriteLine();
             Console.WriteLine("Who plays first?");
             var x = 1;
             Console.WriteLine("r) Random");
-            foreach (var player in _players)
+            foreach (var player in _gameState.Players)
             {
                 Console.Write(x + ") ");
                 x++;
@@ -429,20 +483,17 @@ public class Game
             Console.WriteLine();
             if (input.Equals("r"))
             {
-                chosenPlayer = rand.Next(_playerAmount);
-                _indexOfActivePlayer = chosenPlayer;
+                chosenPlayer = rand.Next(_gameState.PlayerAmount);
+                _gameState.IndexOfActivePlayer = chosenPlayer;
                 break;
             }
-            else if (int.TryParse(input, out chosenPlayer) && chosenPlayer >= 0 && chosenPlayer <= _playerAmount)
+            if (int.TryParse(input, out chosenPlayer) && chosenPlayer >= 0 && chosenPlayer <= _gameState.PlayerAmount)
             {
-                _indexOfActivePlayer = chosenPlayer - 1;
+                _gameState.IndexOfActivePlayer = chosenPlayer - 1;
                 break;
             }
-            else
-            {
-                Console.Clear();
-                Console.WriteLine("You need to type number of a player or type r so gods of random choose for you!");
-            }
+            Console.Clear();
+            Console.WriteLine("You need to type number of a player or type r so gods of random choose for you!");
         }
     }
 }

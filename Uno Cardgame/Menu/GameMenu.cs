@@ -5,7 +5,9 @@ public class GameMenu
 {
     private string Title;
     public int Players = 2;
+    public int AI = 0;
     public string GameType = "Official";
+    
     
     private const string MenuSeparator = "=======================";
 
@@ -167,12 +169,44 @@ public class GameMenu
         {
             Console.WriteLine("Load Game");
             Console.WriteLine(MenuSeparator);
-            // foreach (loaded games)
-            Console.WriteLine("b)Back");
-            Console.WriteLine("x)eXit");
+            var directory = Path.Combine(Path.GetTempPath(), "savedGames");
+            string[] files = Directory.GetFiles(directory);
+            for (int i = 0; i < files.Length; i++)
+            {
+                Console.WriteLine(files[i]);
+            }
+            var txtPath = Path.Combine(Path.GetTempPath(), "saved_games.txt");
+            if (!File.Exists(txtPath))
+            {
+                File.CreateText(txtPath);
+            }
+
+            using (StreamReader reader = new StreamReader(txtPath))
+            {
+                string line;
+                var x = 1;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    Console.WriteLine(x + ") " + line);
+                    x++;
+                }
+            }
+            Console.WriteLine();
+            Console.WriteLine("b) Back");
+            Console.WriteLine("x) eXit");
             Console.WriteLine(MenuSeparator);
-            Console.WriteLine("Your Choice: ");
+            Console.Write("Your Choice: ");
             answer = Console.ReadLine()?.Trim();
+            var saveNumber = 0;
+            if (int.TryParse(answer, out saveNumber))
+            {
+                if (saveNumber > 0 && files.Length >= saveNumber)
+                {
+                    GameRepositoryFileSystem gameRepositoryFileSystem = new GameRepositoryFileSystem();
+                    Game game = new Game(gameRepositoryFileSystem.LoadGame(files[saveNumber - 1]));
+                    game.Run();
+                }
+            }
             if (!answer.ToLower().Equals("x") && !answer.ToLower().Equals("b"))
             {
                 Console.Clear();

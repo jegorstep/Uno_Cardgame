@@ -1,25 +1,20 @@
-﻿using Cards;
+﻿
 
-namespace Players;
+namespace Domain;
 
 public class Player
 {
 
-    public string Name;
-    public List<Card> Hand = new List<Card>();
-    public int Points = 0;
+    public string Name { get; set; }
+    public List<Card> Hand { get; set; } = new List<Card>();
+    public int Points { get; set; } = 0;
     
     public Player(string name)
     {
         Name = name;
     }
 
-    public string GetName()
-    {
-        return Name;
-    }
-
-    public void GetHand()
+    public void GetHandInString()
     {
         foreach (var card in Hand)
         {

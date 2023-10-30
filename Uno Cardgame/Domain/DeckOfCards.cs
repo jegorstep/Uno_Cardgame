@@ -1,4 +1,4 @@
-﻿namespace Cards;
+﻿namespace Domain;
 
 public class DeckOfCards : Card
 {

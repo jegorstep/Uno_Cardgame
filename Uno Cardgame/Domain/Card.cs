@@ -1,4 +1,4 @@
-﻿namespace Cards;
+﻿namespace Domain;
 
 public class Card 
 {
@@ -35,15 +35,15 @@ public class Card
         switch (colorValue)
         {
             case (int)Color.Yellow:
-                return "🟨";
+                return "Yellow ";
             case (int)Color.Green:
-                return "🟩";
+                return "Green ";
             case (int)Color.Red:
-                return "🟥";
+                return "Red ";
             case (int)Color.Blue:
-                return "🟦";
+                return "Blue ";
             case (int)Color.Wild:
-                return "⬛️";
+                return "Wild ";
             // Add more cases for other enum values as needed
             default:
                 return "-";
