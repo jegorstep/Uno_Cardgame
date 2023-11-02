@@ -1,6 +1,5 @@
-﻿using System.Net;
+﻿
 using Domain;
-using DAL;
 namespace GameEngine;
 
 
@@ -8,9 +7,10 @@ public class Game
 {
     private GameRepositoryFileSystem _saveSystem = new GameRepositoryFileSystem();
     private GameState _gameState = new GameState();
-    private bool exitGame = false;
+    private bool _exitGame = false;
     private bool _isNewGame = true;
     private Random _random = new Random();
+    private GameUI _gameUi = new GameUI();
     
     public Game(int players)
     {
@@ -27,34 +27,9 @@ public class Game
     {
         if (_isNewGame)
         {
-            _gameState.Deck.SetUpDeck();
-            Console.Clear();
-            Console.Write("Deal Cards");
-            Thread.Sleep(800);
-            Console.Write(".");
-            Thread.Sleep(800);
-            Console.Write(".");
-            Thread.Sleep(800);
-            Console.Write(".");
-            Thread.Sleep(800);
-            Console.Clear();
-            CreatePlayers();
-            while (true) // deal with unwanted wild card as lastCardOnDiscardPile
-            {
-                _gameState.LastCardOnDiscardPile = _gameState.Deck.GetDeck.Peek();
-                if (_gameState.LastCardOnDiscardPile.CardColor != Card.Color.Wild)
-                {
-                    _gameState.LastCardOnDiscardPile = _gameState.Deck.GetDeck.Pop();
-                    break;
-                }
-
-                _gameState.Deck.SetUpDeck();
-            }
-
-            DealCard();
-            introducePlayers();
+            setUpGame();
         }
-
+            
         Console.Clear();
         while (true)
         {
@@ -63,22 +38,40 @@ public class Game
             Console.WriteLine(_gameState.LastCardOnDiscardPile.ToString());
             PlayerAction();
             Console.WriteLine();
-            if (exitGame)
+            if (_exitGame)
             {
-                exitGame = false;
+                _exitGame = false;
                 break;
             }
             IPlayer player = CheckHands();
             if (CountPoints(player))
             {
-                Console.WriteLine("See ya, suckers!");
-                Console.WriteLine();
-                Console.WriteLine(">> T H E  E N D <<");
-                Console.WriteLine();
+                _gameUi.PrintEndGame();
                 Thread.Sleep(2000);
                 break;   
             }
         }
+    }
+
+    private void setUpGame()
+    {
+        _gameState.Deck.SetUpDeck();
+        _gameUi.PrintDealCards();
+        CreatePlayers();
+        while (true) // deal with unwanted wild card as lastCardOnDiscardPile
+        {
+            _gameState.LastCardOnDiscardPile = _gameState.Deck.GetDeck.Peek();
+            if (_gameState.LastCardOnDiscardPile.CardColor != Card.Color.Wild)
+            {
+                _gameState.LastCardOnDiscardPile = _gameState.Deck.GetDeck.Pop();
+                break;
+            }
+
+            _gameState.Deck.SetUpDeck();
+        }
+
+        DealCard();
+        introducePlayers();
     }
 
 
@@ -88,13 +81,7 @@ public class Game
         {
             if (player.Hand.Count == 0)
             {
-                Console.WriteLine(player.Name + " is a winner of this round!");
-                Console.WriteLine();
-                Console.WriteLine("Counting Points...");
-                Thread.Sleep(5000);
-                Console.WriteLine("Dealing cards...");
-                Thread.Sleep(2000);
-                Console.WriteLine();
+                _gameUi.PrintWinnerOfRound(player.Name);
                 _gameState.Deck.SetUpDeck();
                 DealCard();
                 return player;
@@ -141,31 +128,13 @@ public class Game
             Console.WriteLine(player.Name.ToUpper() + " WON THE GAME, CONGRATULATIONS!");
             return true;
         }
-        else
-        {
-            Console.WriteLine();
-            Console.WriteLine(player.Name + " has now " + player.Points + " points!");
-            Console.WriteLine();
-        }
+
+        _gameUi.PrintWinnerPoints(player);
+        
         return false;
     }
 
 
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     private void PlayerAction()
@@ -261,9 +230,8 @@ public class Game
                     break;
                 }
 
-                Console.WriteLine();
-                Console.WriteLine("s) Save Game");
-                Console.WriteLine("x) Exit Game");
+                _gameUi.PrintPlayerSaveOrExit();
+                
                 Console.Write(player.Name + " choose card you want to play: ");
 
                 var chosenIndexInt = 0;
@@ -274,7 +242,7 @@ public class Game
                 }
                 else if (chosenCardIndex.ToLower() == "x")
                 {
-                    exitGame = true;
+                    _exitGame = true;
                     break;
                 }
                 else if (int.TryParse(chosenCardIndex, out chosenIndexInt)) // User must choose card index from 1 to ...
@@ -390,11 +358,7 @@ public class Game
             }
             else
             {
-                Console.WriteLine("y) Yellow");
-                Console.WriteLine("g) Green");
-                Console.WriteLine("b) Blue");
-                Console.WriteLine("r) Red");
-                Console.Write("Choose color: ");
+                _gameUi.PrintColorChooseWild();
                 input = Console.ReadLine().Trim();
             }
 
