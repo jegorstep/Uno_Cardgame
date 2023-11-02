@@ -1,6 +1,6 @@
 ﻿namespace Domain;
 
-public class AI
+public class AI : IPlayer
 {
 
     public string Name { get; set; }

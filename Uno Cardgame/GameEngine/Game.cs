@@ -1,4 +1,5 @@
-﻿using Domain;
+﻿using System.Net;
+using Domain;
 using DAL;
 namespace GameEngine;
 
@@ -9,6 +10,7 @@ public class Game
     private GameState _gameState = new GameState();
     private bool exitGame = false;
     private bool _isNewGame = true;
+    private Random _random = new Random();
     
     public Game(int players)
     {
@@ -60,12 +62,13 @@ public class Game
             Console.Write("Card on discard pile is: ");
             Console.WriteLine(_gameState.LastCardOnDiscardPile.ToString());
             PlayerAction();
+            Console.WriteLine();
             if (exitGame)
             {
                 exitGame = false;
                 break;
             }
-            Player player = CheckHands();
+            IPlayer player = CheckHands();
             if (CountPoints(player))
             {
                 Console.WriteLine("See ya, suckers!");
@@ -79,7 +82,7 @@ public class Game
     }
 
 
-    private Player CheckHands()
+    private IPlayer CheckHands()
     {
         foreach (var player in _gameState.Players)
         {
@@ -101,7 +104,7 @@ public class Game
         return null;
     }
 
-    private bool CountPoints(Player? player)
+    private bool CountPoints(IPlayer? player)
     {
         
         if (player == null)
@@ -177,31 +180,32 @@ public class Game
         }
 
         Card actionCard = null;
-        Player player = _gameState.Players[_gameState.IndexOfActivePlayer];
-        Console.Write("Your cards: ");
-        player.GetHandInString();
-        while (actionCard == null) // force player to choose right card
+        IPlayer player = _gameState.Players[_gameState.IndexOfActivePlayer];
+        if (player is AI)
         {
+            Console.Write(player.Name + " cards: ");
+            player.GetHandInString();
             Console.WriteLine();
-            Console.Write("Possible moves: ");
             List<Card> possibleMoves = PossibleMoves(player.Hand);
             if (possibleMoves.Count == 0)
             {
-                Console.WriteLine("It seems you don't have moves, you take card...");
+                Console.WriteLine();
+                Console.WriteLine("It seems " + player.Name + " don't have moves, he takes card...");
                 Thread.Sleep(2000);
                 Card card;
                 if (_gameState.Deck.GetDeck.TryPop(out card))
                 {
-                    if (card.CardColor != _gameState.LastCardOnDiscardPile.CardColor 
-                        && card.CardValue != _gameState.LastCardOnDiscardPile.CardValue && card.CardColor != Card.Color.Wild)
+                    if (card.CardColor != _gameState.LastCardOnDiscardPile.CardColor
+                        && card.CardValue != _gameState.LastCardOnDiscardPile.CardValue &&
+                        card.CardColor != Card.Color.Wild)
                     {
-                        Console.WriteLine("Card is not playable, you skip turn, " + player.Name + " sucks!");
+                        Console.WriteLine("Card is not playable, skip turn, " + player.Name + " sucks!");
                         Thread.Sleep(2000);
                         player.Hand.Add(card);
                     }
                     else
                     {
-                        Console.WriteLine("Seems you found right card, you play card " + card);
+                        Console.WriteLine("Seems " + player.Name + " found right card, he plays card " + card);
                         Thread.Sleep(2000);
                         actionCard = card;
                     }
@@ -211,51 +215,91 @@ public class Game
                     RefreshDeckOfCards();
                     actionCard = _gameState.Deck.GetDeck.Pop();
                 }
-                break;
-            }
-            Console.WriteLine();
-            Console.WriteLine("s) Save Game");
-            Console.WriteLine("x) Exit Game");
-            Console.Write(player.Name + " choose card you want to play: ");
-            
-            var chosenIndexInt = 0;
-            var chosenCardIndex = Console.ReadLine().Trim();
-            if (chosenCardIndex.ToLower() == "s")
-            {
-                Console.Write("Choose name of save: ");
-                var saveName = Console.ReadLine().Trim();
-                Console.WriteLine();
-                var fileName = _saveSystem.SaveGame(saveName, _gameState);
-                var path = Path.Combine(Path.GetTempPath(), "savedGames");
-                StreamWriter writer = new StreamWriter(Path.Combine(Path.GetTempPath(), "saved_games.txt"), true);
-                writer.WriteLine(fileName);
-                writer.Close();
-                Console.WriteLine("Game have been saved successfully!");
-            }
-            else if (chosenCardIndex.ToLower() == "x")
-            {
-                exitGame = true;
-                break; 
-            }
-            else if (int.TryParse(chosenCardIndex, out chosenIndexInt)) // User must choose card index from 1 to ...
-            {
-                if (chosenIndexInt >= 1 && chosenIndexInt <= possibleMoves.Count)
-                {
-                    actionCard = possibleMoves[chosenIndexInt - 1]; // index decrease by 1
-                }
             }
             else
             {
-                Console.WriteLine("Try again, loser!");
+                actionCard = possibleMoves[_random.Next(possibleMoves.Count())];
             }
         }
+        else
+        {
+            Console.Write("Your cards: ");
+            player.GetHandInString();
+            while (actionCard == null) // force player to choose right card
+            {
+                Console.WriteLine();
+                Console.Write("Possible moves: ");
+                List<Card> possibleMoves = PossibleMoves(player.Hand);
+                if (possibleMoves.Count == 0)
+                {
+                    Console.WriteLine("It seems you don't have moves, you take card...");
+                    Thread.Sleep(2000);
+                    Card card;
+                    if (_gameState.Deck.GetDeck.TryPop(out card))
+                    {
+                        if (card.CardColor != _gameState.LastCardOnDiscardPile.CardColor
+                            && card.CardValue != _gameState.LastCardOnDiscardPile.CardValue &&
+                            card.CardColor != Card.Color.Wild)
+                        {
+                            Console.WriteLine("Card is not playable, you skip turn, " + player.Name + " sucks!");
+                            Thread.Sleep(2000);
+                            player.Hand.Add(card);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Seems you found right card, you play card " + card);
+                            Thread.Sleep(2000);
+                            actionCard = card;
+                        }
+                    }
+                    else
+                    {
+                        RefreshDeckOfCards();
+                        actionCard = _gameState.Deck.GetDeck.Pop();
+                    }
+
+                    break;
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("s) Save Game");
+                Console.WriteLine("x) Exit Game");
+                Console.Write(player.Name + " choose card you want to play: ");
+
+                var chosenIndexInt = 0;
+                var chosenCardIndex = Console.ReadLine().Trim();
+                if (chosenCardIndex.ToLower() == "s")
+                {
+                    saveGame();
+                }
+                else if (chosenCardIndex.ToLower() == "x")
+                {
+                    exitGame = true;
+                    break;
+                }
+                else if (int.TryParse(chosenCardIndex, out chosenIndexInt)) // User must choose card index from 1 to ...
+                {
+                    if (chosenIndexInt >= 1 && chosenIndexInt <= possibleMoves.Count)
+                    {
+                        actionCard = possibleMoves[chosenIndexInt - 1]; // index decrease by 1
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Try again, loser!");
+                }
+            }
+        }
+
         Console.WriteLine();
+        
         ActionManager(player, actionCard);
+        
     }
 
 
 
-    private void ActionManager(Player player, Card? actionCard)
+    private void ActionManager(IPlayer player, Card? actionCard)
     {
         if (actionCard != null)
         {
@@ -297,6 +341,11 @@ public class Game
         SkipPlayer();
     }
 
+    private void AIManager()
+    {
+        
+    }
+
 
     private void RefreshDeckOfCards()
     {
@@ -330,12 +379,25 @@ public class Game
     {
         while (true)
         {
-            Console.WriteLine("y) Yellow");
-            Console.WriteLine("g) Green");
-            Console.WriteLine("b) Blue");
-            Console.WriteLine("r) Red");
-            Console.Write("Choose color: ");
-            var input = Console.ReadLine().Trim();
+            var player = _gameState.Players[_gameState.IndexOfActivePlayer];
+            String input;
+            string[] colors = {"y", "b", "g", "r"};
+            if (player is AI)
+            {
+                Console.Write(player.Name + " chooses color...");
+                input = colors[_random.Next(colors.Length)];
+
+            }
+            else
+            {
+                Console.WriteLine("y) Yellow");
+                Console.WriteLine("g) Green");
+                Console.WriteLine("b) Blue");
+                Console.WriteLine("r) Red");
+                Console.Write("Choose color: ");
+                input = Console.ReadLine().Trim();
+            }
+
             Console.WriteLine();
             if (input.ToLower() == "y")
             {
@@ -374,6 +436,19 @@ public class Game
         {
             _gameState.Players[_gameState.IndexOfActivePlayer].Hand.Add(card2);
         }
+    }
+
+    private void saveGame()
+    {
+        Console.Write("Choose name of save: ");
+        var saveName = Console.ReadLine().Trim();
+        Console.WriteLine();
+        var fileName = _saveSystem.SaveGame(saveName, _gameState);
+        var path = Path.Combine(Path.GetTempPath(), "savedGames");
+        StreamWriter writer = new StreamWriter(Path.Combine(Path.GetTempPath(), "saved_games.txt"), true);
+        writer.WriteLine(fileName);
+        writer.Close();
+        Console.WriteLine("Game have been saved successfully!");
     }
 
     private void SkipPlayer()
@@ -448,15 +523,35 @@ public class Game
         }
     }
 
-    private List<Player> CreatePlayers()
+    private List<IPlayer> CreatePlayers()
     {
-        for (int i = 0; i < _gameState.PlayerAmount; i++)
+        int aiAsInt;
+        while (true)
         {
-            Console.Write("Type player name for " + (i + 1) + " player: ");
+            Console.Write("Choose amount of AI: ");
+            var ai = Console.ReadLine().Trim();
+            if (int.TryParse(ai, out aiAsInt))
+            {
+                if (aiAsInt < _gameState.PlayerAmount && aiAsInt >= 0)
+                {
+                    for (int i = 1; i <= aiAsInt; i++)
+                    {
+                        _gameState.Players.Add(new AI(i));
+                    }
+                    break;
+                }
+            }
+            Console.WriteLine("Wrong input!");
+        }
+
+        for (int i = 1; i <= _gameState.PlayerAmount - aiAsInt; i++)
+        {
+            Console.Write("Type name for " + i + " human player: ");
             var newPlayerName = Console.ReadLine().Trim();
-            _gameState.Players.Add(new Player(newPlayerName));
+            _gameState.Players.Add(new Human(newPlayerName));
             Console.WriteLine();
         }
+        
 
         return _gameState.Players;
     }
@@ -464,7 +559,6 @@ public class Game
     private void introducePlayers()
     {
         Console.Clear();
-        Random rand = new Random();
         var chosenPlayer = 0;
         while (true)
         {
@@ -483,7 +577,7 @@ public class Game
             Console.WriteLine();
             if (input.Equals("r"))
             {
-                chosenPlayer = rand.Next(_gameState.PlayerAmount);
+                chosenPlayer = _random.Next(_gameState.PlayerAmount);
                 _gameState.IndexOfActivePlayer = chosenPlayer;
                 break;
             }

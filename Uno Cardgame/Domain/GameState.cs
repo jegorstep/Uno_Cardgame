@@ -9,7 +9,7 @@ public class GameState
     public bool IsReverse { get; set; } = false;
     public int IndexOfActivePlayer { get; set; }
     public int PlayerAmount { get; set; }
-    public List<Player> Players { get; set; } = new List<Player>();
+    public List<IPlayer> Players { get; set; } = new List<IPlayer>();
     public DeckOfCards Deck { get; set; } = new DeckOfCards();
     public Card? LastCardOnDiscardPile { get; set; }
 }
