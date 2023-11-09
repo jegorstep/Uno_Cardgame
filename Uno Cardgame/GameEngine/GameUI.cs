@@ -37,7 +37,7 @@ public class GameUI
         Console.WriteLine();
     }
 
-    public void PrintWinnerPoints(IPlayer player)
+    public void PrintWinnerPoints(Player player)
     {
         Console.WriteLine();
         Console.WriteLine(player.Name + " has now " + player.Points + " points!");

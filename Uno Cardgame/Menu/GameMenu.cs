@@ -1,11 +1,15 @@
-﻿using GameEngine;
+﻿using DAL;
+using GameEngine;
+using Microsoft.EntityFrameworkCore;
+
 namespace Menu;
 
 public class GameMenu
 {
-    private string Title;
+    private GameRepositoryFileSystem _gameRepositoryFileSystem = new GameRepositoryFileSystem();
+    private string _title;
     public int Players = 2;
-    public int AI = 0;
+    public int Ai = 0;
     public string GameType = "Official";
     
     
@@ -14,7 +18,7 @@ public class GameMenu
 
     public GameMenu(string title)
     {
-        Title = title;
+        _title = title;
     }
 
     public void Run()
@@ -35,7 +39,7 @@ public class GameMenu
         {
             do
             {
-                Console.WriteLine(Title);
+                Console.WriteLine(_title);
                 Console.WriteLine(MenuSeparator);
                 Console.WriteLine("s) Start Game");
                 Console.WriteLine("l) Load Game");
@@ -43,7 +47,7 @@ public class GameMenu
                 Console.WriteLine(MenuSeparator);
                 Console.Write("Your choice: ");
 
-                answer = Console.ReadLine()?.Trim();
+                answer = Console.ReadLine()!.Trim();
                 Console.WriteLine(answer);
 
                 if (!answer.ToLower().Equals("s") && !answer.ToLower().Equals("l") && !answer.ToLower().Equals("x"))
@@ -85,7 +89,7 @@ public class GameMenu
                 Console.WriteLine(MenuSeparator);
                 Console.Write("Your choice: ");
 
-                answer = Console.ReadLine()?.Trim();
+                answer = Console.ReadLine()!.Trim();
 
                 if (!answer.ToLower().Equals("p") && !answer.ToLower().Equals("b") && !answer.ToLower().Equals("x") &&
                     !answer.ToLower().Equals("n") && !answer.ToLower().Equals("o"))
@@ -108,7 +112,7 @@ public class GameMenu
                     Console.WriteLine("2)Custom");
                     Console.WriteLine("Choose game type (Right now this feature doesn't work and game will always be official) : ");
                     
-                    var input = Console.ReadLine()?.Trim();
+                    var input = Console.ReadLine()!.Trim();
                     
                     if (input.ToLower().Equals("2") || input.ToLower().Equals("c"))
                     {
@@ -131,7 +135,7 @@ public class GameMenu
                     Console.Clear();
                     Console.WriteLine("Choose number of players: ");
                     var number = Console.ReadLine()?.Trim();
-                    var integer = 0;
+                    int integer;
                     if (int.TryParse(number, out integer))
                     {
                         if (integer is >= 2 and <= 10)
@@ -164,46 +168,43 @@ public class GameMenu
 
     private string LoadGameFormat()
     {
-        var answer = "";
+        string answer;
         do
         {
             Console.WriteLine("Load Game");
             Console.WriteLine(MenuSeparator);
-            var directory = Path.Combine(Path.GetTempPath(), "savedGames");
-            string[] files = Directory.GetFiles(directory);
-            for (int i = 0; i < files.Length; i++)
+            int x = 1;
+            var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+                .UseSqlite("Data Source=app.db")
+                .EnableDetailedErrors()
+                .EnableSensitiveDataLogging()
+                .Options;
+            using var db = new AppDbContext(contextOptions);
+            db.Database.Migrate();
+            GameRepositoryEF database = new GameRepositoryEF(db);
+            var savedGames = database.GetSaveGames();
+            // IGameRepository gameRepository = new GameRepositoryEF(db);
+            // gameRepository.Save(_gameState.Id, _gameState);
+            // List<(Guid, DateTime)> savedGames = _gameRepositoryFileSystem.GetSaveGames();
+            foreach (var saveGame in savedGames)
             {
-                Console.WriteLine(files[i]);
+                Console.WriteLine(x + ") " + saveGame);
+                x++;    
             }
-            var txtPath = Path.Combine(Path.GetTempPath(), "saved_games.txt");
-            if (!File.Exists(txtPath))
-            {
-                File.CreateText(txtPath);
-            }
-
-            using (StreamReader reader = new StreamReader(txtPath))
-            {
-                string line;
-                var x = 1;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    Console.WriteLine(x + ") " + line);
-                    x++;
-                }
-            }
+            
             Console.WriteLine();
             Console.WriteLine("b) Back");
             Console.WriteLine("x) eXit");
             Console.WriteLine(MenuSeparator);
             Console.Write("Your Choice: ");
-            answer = Console.ReadLine()?.Trim();
-            var saveNumber = 0;
+            answer = Console.ReadLine()!.Trim();
+            int saveNumber;
             if (int.TryParse(answer, out saveNumber))
             {
-                if (saveNumber > 0 && files.Length >= saveNumber)
+                if (saveNumber > 0 && savedGames.Count >= saveNumber)
                 {
                     GameRepositoryFileSystem gameRepositoryFileSystem = new GameRepositoryFileSystem();
-                    Game game = new Game(gameRepositoryFileSystem.LoadGame(files[saveNumber - 1]));
+                    Game game = new Game(database.LoadGame(savedGames[saveNumber - 1].Item1));
                     game.Run();
                 }
             }

@@ -2,8 +2,10 @@ using Domain;
 
 namespace DAL;
 
-public interface IGameRepository<TKey>
+public interface IGameRepository
 {
-    TKey SaveGame(string name, GameState game);
-    GameState LoadGame(TKey id);
+    void Save(Guid id, GameState state);
+    List<(Guid id, DateTime dt)> GetSaveGames();
+
+    GameState LoadGame(Guid id);
 }

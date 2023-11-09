@@ -1,5 +1,7 @@
-﻿
+﻿using DAL;
 using Domain;
+using Microsoft.EntityFrameworkCore;
+
 namespace GameEngine;
 
 
@@ -7,10 +9,11 @@ public class Game
 {
     private GameRepositoryFileSystem _saveSystem = new GameRepositoryFileSystem();
     private GameState _gameState = new GameState();
-    private bool _exitGame = false;
+    private bool _exitGame;
     private bool _isNewGame = true;
     private Random _random = new Random();
     private GameUI _gameUi = new GameUI();
+    private AppDbContextFactory _factory = new AppDbContextFactory();
     
     public Game(int players)
     {
@@ -27,7 +30,7 @@ public class Game
     {
         if (_isNewGame)
         {
-            setUpGame();
+            SetUpGame();
         }
             
         Console.Clear();
@@ -35,7 +38,7 @@ public class Game
         {
             Console.WriteLine("Your turn: " + _gameState.Players[_gameState.IndexOfActivePlayer].Name);
             Console.Write("Card on discard pile is: ");
-            Console.WriteLine(_gameState.LastCardOnDiscardPile.ToString());
+            Console.WriteLine(_gameState.LastCardOnDiscardPile!.ToString());
             PlayerAction();
             Console.WriteLine();
             if (_exitGame)
@@ -43,7 +46,7 @@ public class Game
                 _exitGame = false;
                 break;
             }
-            IPlayer player = CheckHands();
+            Player player = CheckHands();
             if (CountPoints(player))
             {
                 _gameUi.PrintEndGame();
@@ -53,7 +56,7 @@ public class Game
         }
     }
 
-    private void setUpGame()
+    private void SetUpGame()
     {
         _gameState.Deck.SetUpDeck();
         _gameUi.PrintDealCards();
@@ -71,11 +74,11 @@ public class Game
         }
 
         DealCard();
-        introducePlayers();
+        IntroducePlayers();
     }
 
 
-    private IPlayer CheckHands()
+    private Player CheckHands()
     {
         foreach (var player in _gameState.Players)
         {
@@ -88,10 +91,10 @@ public class Game
             }
         }
 
-        return null;
+        return null!;
     }
 
-    private bool CountPoints(IPlayer? player)
+    private bool CountPoints(Player? player)
     {
         
         if (player == null)
@@ -148,9 +151,9 @@ public class Game
             _gameState.IndexOfActivePlayer = _gameState.PlayerAmount - 1;
         }
 
-        Card actionCard = null;
-        IPlayer player = _gameState.Players[_gameState.IndexOfActivePlayer];
-        if (player is AI)
+        Card actionCard = null!;
+        Player player = _gameState.Players[_gameState.IndexOfActivePlayer];
+        if (!player.isHuman)
         {
             Console.Write(player.Name + " cards: ");
             player.GetHandInString();
@@ -162,9 +165,9 @@ public class Game
                 Console.WriteLine("It seems " + player.Name + " don't have moves, he takes card...");
                 Thread.Sleep(2000);
                 Card card;
-                if (_gameState.Deck.GetDeck.TryPop(out card))
+                if (_gameState.Deck.GetDeck.TryPop(out card!))
                 {
-                    if (card.CardColor != _gameState.LastCardOnDiscardPile.CardColor
+                    if (card.CardColor != _gameState.LastCardOnDiscardPile!.CardColor
                         && card.CardValue != _gameState.LastCardOnDiscardPile.CardValue &&
                         card.CardColor != Card.Color.Wild)
                     {
@@ -204,9 +207,9 @@ public class Game
                     Console.WriteLine("It seems you don't have moves, you take card...");
                     Thread.Sleep(2000);
                     Card card;
-                    if (_gameState.Deck.GetDeck.TryPop(out card))
+                    if (_gameState.Deck.GetDeck.TryPop(out card!))
                     {
-                        if (card.CardColor != _gameState.LastCardOnDiscardPile.CardColor
+                        if (card.CardColor != _gameState.LastCardOnDiscardPile!.CardColor
                             && card.CardValue != _gameState.LastCardOnDiscardPile.CardValue &&
                             card.CardColor != Card.Color.Wild)
                         {
@@ -234,11 +237,11 @@ public class Game
                 
                 Console.Write(player.Name + " choose card you want to play: ");
 
-                var chosenIndexInt = 0;
-                var chosenCardIndex = Console.ReadLine().Trim();
+                int chosenIndexInt;
+                var chosenCardIndex = Console.ReadLine()!.Trim();
                 if (chosenCardIndex.ToLower() == "s")
                 {
-                    saveGame();
+                    SaveGame();
                 }
                 else if (chosenCardIndex.ToLower() == "x")
                 {
@@ -267,7 +270,7 @@ public class Game
 
 
 
-    private void ActionManager(IPlayer player, Card? actionCard)
+    private void ActionManager(Player player, Card? actionCard)
     {
         if (actionCard != null)
         {
@@ -309,12 +312,6 @@ public class Game
         SkipPlayer();
     }
 
-    private void AIManager()
-    {
-        
-    }
-
-
     private void RefreshDeckOfCards()
     {
         List<Card> cardsRemainedInGame = new List<Card>(); // action card + all players cards
@@ -326,12 +323,12 @@ public class Game
             }
         }
 
-        cardsRemainedInGame.Add(_gameState.LastCardOnDiscardPile);
+        cardsRemainedInGame.Add(_gameState.LastCardOnDiscardPile!);
         _gameState.Deck.SetUpDeck();
 
         Card cardForNewStack;
         Stack<Card> newStack = new Stack<Card>();
-        while (_gameState.Deck.GetDeck.TryPeek(out cardForNewStack))
+        while (_gameState.Deck.GetDeck.TryPeek(out cardForNewStack!))
         {
             if (!cardsRemainedInGame.Contains(cardForNewStack))
             {
@@ -350,7 +347,7 @@ public class Game
             var player = _gameState.Players[_gameState.IndexOfActivePlayer];
             String input;
             string[] colors = {"y", "b", "g", "r"};
-            if (player is AI)
+            if (!player.isHuman)
             {
                 Console.Write(player.Name + " chooses color...");
                 input = colors[_random.Next(colors.Length)];
@@ -359,7 +356,7 @@ public class Game
             else
             {
                 _gameUi.PrintColorChooseWild();
-                input = Console.ReadLine().Trim();
+                input = Console.ReadLine()!.Trim();
             }
 
             Console.WriteLine();
@@ -390,29 +387,43 @@ public class Game
 
     private void DrawTwo()
     {
-        Card card1 = null;
-        if (_gameState.Deck.GetDeck.TryPop(out card1))
+        Card card1;
+        if (_gameState.Deck.GetDeck.TryPop(out card1!))
         {
             _gameState.Players[_gameState.IndexOfActivePlayer].Hand.Add(card1);
         }
-        Card card2 = null;
-        if (_gameState.Deck.GetDeck.TryPop(out card2))
+        Card card2;
+        if (_gameState.Deck.GetDeck.TryPop(out card2!))
         {
             _gameState.Players[_gameState.IndexOfActivePlayer].Hand.Add(card2);
         }
     }
 
-    private void saveGame()
+    private void SaveGame()
     {
-        Console.Write("Choose name of save: ");
-        var saveName = Console.ReadLine().Trim();
-        Console.WriteLine();
-        var fileName = _saveSystem.SaveGame(saveName, _gameState);
-        var path = Path.Combine(Path.GetTempPath(), "savedGames");
-        StreamWriter writer = new StreamWriter(Path.Combine(Path.GetTempPath(), "saved_games.txt"), true);
-        writer.WriteLine(fileName);
-        writer.Close();
-        Console.WriteLine("Game have been saved successfully!");
+        var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite("Data Source=app.db")
+            .EnableDetailedErrors()
+            .EnableSensitiveDataLogging()
+            .Options;
+        using var db = new AppDbContext(contextOptions);
+        db.Database.Migrate();
+        IGameRepository gameRepository = new GameRepositoryEF(db);
+        gameRepository.Save(_gameState.Id, _gameState);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        // Console.WriteLine();
+        // _saveSystem.Save(_gameState.Id, _gameState);
+        // Thread.Sleep(1000);
+        // Console.WriteLine("Game have been saved successfully!");
     }
 
     private void SkipPlayer()
@@ -439,10 +450,10 @@ public class Game
     private List<Card> PossibleMoves(List<Card> playerHand)
     {
         List<Card> possibleCardsToPlay = new List<Card>();
-        List<Card> WildDrawFourCards = new List<Card>();
+        List<Card> wildDrawFourCards = new List<Card>();
         foreach (var card in playerHand)
         {
-            if (card.CardColor.Equals(_gameState.LastCardOnDiscardPile.CardColor))
+            if (card.CardColor.Equals(_gameState.LastCardOnDiscardPile!.CardColor))
             {
                 possibleCardsToPlay.Add(card);
             }
@@ -456,13 +467,13 @@ public class Game
             }
             else if (card.CardValue == Card.Value.WildDrawFour)
             {
-                WildDrawFourCards.Add(card);
+                wildDrawFourCards.Add(card);
             }
         }
 
         if (possibleCardsToPlay.Count == 0)
         {
-            possibleCardsToPlay = WildDrawFourCards;
+            possibleCardsToPlay = wildDrawFourCards;
         }
 
         var x = 1;
@@ -487,20 +498,21 @@ public class Game
         }
     }
 
-    private List<IPlayer> CreatePlayers()
+    private void CreatePlayers()
     {
         int aiAsInt;
         while (true)
         {
             Console.Write("Choose amount of AI: ");
-            var ai = Console.ReadLine().Trim();
+            var ai = Console.ReadLine()!.Trim();
             if (int.TryParse(ai, out aiAsInt))
             {
                 if (aiAsInt < _gameState.PlayerAmount && aiAsInt >= 0)
                 {
                     for (int i = 1; i <= aiAsInt; i++)
                     {
-                        _gameState.Players.Add(new AI(i));
+                        Player robot = new Player("Player " + i, false);
+                        _gameState.Players.Add(robot);
                     }
                     break;
                 }
@@ -511,19 +523,17 @@ public class Game
         for (int i = 1; i <= _gameState.PlayerAmount - aiAsInt; i++)
         {
             Console.Write("Type name for " + i + " human player: ");
-            var newPlayerName = Console.ReadLine().Trim();
-            _gameState.Players.Add(new Human(newPlayerName));
+            var newPlayerName = Console.ReadLine()!.Trim();
+            Player player = new Player(newPlayerName, true);
+            _gameState.Players.Add(player);
             Console.WriteLine();
         }
-        
-
-        return _gameState.Players;
     }
 
-    private void introducePlayers()
+    private void IntroducePlayers()
     {
         Console.Clear();
-        var chosenPlayer = 0;
+        int chosenPlayer;
         while (true)
         {
             Console.WriteLine("Who plays first?");
@@ -537,7 +547,7 @@ public class Game
             }
 
             Console.Write("Answer: ");
-            var input = Console.ReadLine().Trim();
+            var input = Console.ReadLine()!.Trim();
             Console.WriteLine();
             if (input.Equals("r"))
             {
