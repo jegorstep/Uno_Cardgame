@@ -4,6 +4,55 @@ namespace GameEngine;
 
 public class GameUI
 {
+    
+    static int selectedOption = 0;
+
+    private const string MenuSeparator = "=======================";
+
+    public void UniversalMenu(string[] options)
+    {
+        Console.CursorVisible = false;
+        ConsoleKeyInfo key;
+
+        do
+        {
+            Console.Clear();
+            PrintMenu(options);
+
+            key = Console.ReadKey(true);
+
+            switch (key.Key)
+            {
+                case ConsoleKey.UpArrow:
+                    if (selectedOption > 0)
+                        selectedOption--;
+                    break;
+                case ConsoleKey.DownArrow:
+                    if (selectedOption < options.Length - 1)
+                        selectedOption++;
+                    break;
+            }
+        } while (key.Key != ConsoleKey.Enter);
+
+        Console.Clear();
+        Console.WriteLine($"You selected: {options[selectedOption]}");
+    }
+
+    static void PrintMenu(string[] options)
+    {
+        for (int i = 0; i < options.Length; i++)
+        {
+            if (i == selectedOption)
+            {
+                Console.BackgroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = ConsoleColor.Black;
+            }
+
+            Console.WriteLine($" {options[i]} ");
+
+            Console.ResetColor();
+        }
+    }
     public void PrintDealCards()
     {
         Console.Clear();

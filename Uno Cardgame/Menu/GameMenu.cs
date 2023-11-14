@@ -6,7 +6,11 @@ namespace Menu;
 
 public class GameMenu
 {
-    private GameRepositoryFileSystem _gameRepositoryFileSystem = new GameRepositoryFileSystem();
+    private IGameRepository _gameRepository = default!;
+    private GameUI _gameUi = new GameUI();
+    
+    
+
     private string _title;
     public int Players = 2;
     public int Ai = 0;
@@ -39,13 +43,15 @@ public class GameMenu
         {
             do
             {
-                Console.WriteLine(_title);
-                Console.WriteLine(MenuSeparator);
-                Console.WriteLine("s) Start Game");
-                Console.WriteLine("l) Load Game");
-                Console.WriteLine("x) eXit");
-                Console.WriteLine(MenuSeparator);
-                Console.Write("Your choice: ");
+                string[] options = new[] {_title, "s) Start Game", "l) Load Game", "x) eXit" };
+                _gameUi.UniversalMenu(options);
+                // Console.WriteLine(_title);
+                // Console.WriteLine(MenuSeparator);
+                // Console.WriteLine("s) Start Game");
+                // Console.WriteLine("l) Load Game");
+                // Console.WriteLine("x) eXit");
+                // Console.WriteLine(MenuSeparator);
+                // Console.Write("Your choice: ");
 
                 answer = Console.ReadLine()!.Trim();
                 Console.WriteLine(answer);
@@ -174,6 +180,9 @@ public class GameMenu
             Console.WriteLine("Load Game");
             Console.WriteLine(MenuSeparator);
             int x = 1;
+            
+            
+            // if web application, using database
             var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
                 .UseSqlite("Data Source=app.db")
                 .EnableDetailedErrors()
@@ -181,11 +190,18 @@ public class GameMenu
                 .Options;
             using var db = new AppDbContext(contextOptions);
             db.Database.Migrate();
-            GameRepositoryEF database = new GameRepositoryEF(db);
-            var savedGames = database.GetSaveGames();
-            // IGameRepository gameRepository = new GameRepositoryEF(db);
-            // gameRepository.Save(_gameState.Id, _gameState);
-            // List<(Guid, DateTime)> savedGames = _gameRepositoryFileSystem.GetSaveGames();
+            _gameRepository = new GameRepositoryEF(db);
+            // end of database code
+            
+            
+            
+            // if file save system
+            // gameRepository = new GameRepositoryFileSystem(db);
+            // end of file save system
+            
+            
+            
+            var savedGames = _gameRepository.GetSaveGames();
             foreach (var saveGame in savedGames)
             {
                 Console.WriteLine(x + ") " + saveGame);
@@ -198,13 +214,14 @@ public class GameMenu
             Console.WriteLine(MenuSeparator);
             Console.Write("Your Choice: ");
             answer = Console.ReadLine()!.Trim();
+            Console.Clear();
             int saveNumber;
             if (int.TryParse(answer, out saveNumber))
             {
                 if (saveNumber > 0 && savedGames.Count >= saveNumber)
                 {
-                    GameRepositoryFileSystem gameRepositoryFileSystem = new GameRepositoryFileSystem();
-                    Game game = new Game(database.LoadGame(savedGames[saveNumber - 1].Item1));
+                    Console.Clear();
+                    Game game = new Game(_gameRepository.LoadGame(savedGames[saveNumber - 1].Item1));
                     game.Run();
                 }
             }

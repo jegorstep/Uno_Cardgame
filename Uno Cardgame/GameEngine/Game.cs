@@ -7,13 +7,12 @@ namespace GameEngine;
 
 public class Game
 {
-    private GameRepositoryFileSystem _saveSystem = new GameRepositoryFileSystem();
+    private IGameRepository _saveSystem = default!;
     private GameState _gameState = new GameState();
     private bool _exitGame;
     private bool _isNewGame = true;
     private Random _random = new Random();
     private GameUI _gameUi = new GameUI();
-    private AppDbContextFactory _factory = new AppDbContextFactory();
     
     public Game(int players)
     {
@@ -401,6 +400,7 @@ public class Game
 
     private void SaveGame()
     {
+        // if web application, using database
         var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite("Data Source=app.db")
             .EnableDetailedErrors()
@@ -408,22 +408,21 @@ public class Game
             .Options;
         using var db = new AppDbContext(contextOptions);
         db.Database.Migrate();
-        IGameRepository gameRepository = new GameRepositoryEF(db);
-        gameRepository.Save(_gameState.Id, _gameState);
+        _saveSystem = new GameRepositoryEF(db);
+        // end of database code
+            
+            
+            
+        // if file save system
+        // _saveSystem = new GameRepositoryFileSystem(db);
+        // end of file save system
         
         
         
-        
-        
-        
-        
-        
-        
-        
-        // Console.WriteLine();
-        // _saveSystem.Save(_gameState.Id, _gameState);
-        // Thread.Sleep(1000);
-        // Console.WriteLine("Game have been saved successfully!");
+        Console.WriteLine();
+        _saveSystem.Save(_gameState.Id, _gameState);
+        Thread.Sleep(1000);
+        Console.WriteLine("Game have been saved successfully!");
     }
 
     private void SkipPlayer()
