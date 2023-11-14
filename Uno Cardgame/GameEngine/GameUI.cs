@@ -5,44 +5,66 @@ namespace GameEngine;
 public class GameUI
 {
     
-    static int selectedOption = 0;
+    private int _selectedOption;
 
     private const string MenuSeparator = "=======================";
 
-    public void UniversalMenu(string[] options)
+    public int UniversalMenu(string title, string[] options)
     {
+        _selectedOption = 0;
         Console.CursorVisible = false;
         ConsoleKeyInfo key;
-
+        
         do
         {
             Console.Clear();
+            Console.WriteLine(title);
+            Console.WriteLine(MenuSeparator);
             PrintMenu(options);
+            Console.WriteLine(MenuSeparator);
 
             key = Console.ReadKey(true);
 
             switch (key.Key)
             {
                 case ConsoleKey.UpArrow:
-                    if (selectedOption > 0)
-                        selectedOption--;
+                    if (_selectedOption > 0)
+                        _selectedOption--;
                     break;
                 case ConsoleKey.DownArrow:
-                    if (selectedOption < options.Length - 1)
-                        selectedOption++;
+                    if (_selectedOption < options.Length - 1)
+                        _selectedOption++;
                     break;
             }
         } while (key.Key != ConsoleKey.Enter);
 
         Console.Clear();
-        Console.WriteLine($"You selected: {options[selectedOption]}");
+        return _selectedOption;
     }
 
-    static void PrintMenu(string[] options)
+    public int DemandNumber(string query, int start, int end)
     {
-        for (int i = 0; i < options.Length; i++)
+        int intInput;
+        Console.Write(query);
+        do
         {
-            if (i == selectedOption)
+            var input = Console.ReadLine()!.Trim();
+            int.TryParse(input, out intInput);
+            if (start <= intInput && end >= intInput)
+            {
+                break;
+            }
+        } while (true);
+        
+        return intInput;
+    }
+    
+
+    private void PrintMenu(string[] options)
+    {
+        for (var i = 0; i < options.Length; i++)
+        {
+            if (i == _selectedOption)
             {
                 Console.BackgroundColor = ConsoleColor.Gray;
                 Console.ForegroundColor = ConsoleColor.Black;

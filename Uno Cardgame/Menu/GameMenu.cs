@@ -1,4 +1,5 @@
-﻿using DAL;
+﻿using System.Collections;
+using DAL;
 using GameEngine;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,7 +14,6 @@ public class GameMenu
 
     private string _title;
     public int Players = 2;
-    public int Ai = 0;
     public string GameType = "Official";
     
     
@@ -38,150 +38,76 @@ public class GameMenu
 
     private string StartFormat()
     {
-        var answer = "";
-        while (!answer.ToLower().Equals("x"))
+        string exitOrBack = "";
+        
+        string[] options = {"Start Game", "Load Game", "Exit" };
+        while (exitOrBack != "x")
         {
-            do
+            int answer = _gameUi.UniversalMenu(_title, options);
+            
+            if (answer == 0)
             {
-                string[] options = new[] {_title, "s) Start Game", "l) Load Game", "x) eXit" };
-                _gameUi.UniversalMenu(options);
-                // Console.WriteLine(_title);
-                // Console.WriteLine(MenuSeparator);
-                // Console.WriteLine("s) Start Game");
-                // Console.WriteLine("l) Load Game");
-                // Console.WriteLine("x) eXit");
-                // Console.WriteLine(MenuSeparator);
-                // Console.Write("Your choice: ");
-
-                answer = Console.ReadLine()!.Trim();
-                Console.WriteLine(answer);
-
-                if (!answer.ToLower().Equals("s") && !answer.ToLower().Equals("l") && !answer.ToLower().Equals("x"))
-                {
-                    Console.Clear();
-                    Console.WriteLine("Wrong input!");
-                }
-            } while (!answer.ToLower().Equals("s") && !answer.ToLower().Equals("l") && !answer.ToLower().Equals("x"));
-
-            if (answer.ToLower().Equals("s"))
-            {
-                Console.Clear();
-                answer = NewGameFormat();
+                exitOrBack = NewGameFormat();
             }
-            else if (answer.ToLower().Equals("l"))
+            else if (answer == 1)
             {
-                Console.Clear();
-                answer = LoadGameFormat();
+                exitOrBack = LoadGameFormat();
+            }
+            else if (answer == 2)
+            {
+                exitOrBack = "x";
             }
         }
-        Console.Clear();
-        return answer;
+
+        return exitOrBack;
     }
 
     private string NewGameFormat()
     {
-        var answer = "";
-        while (!answer.ToLower().Equals("x") && !answer.ToLower().Equals("b"))
+        var exitOrBack = "";
+        int answer;
+
+        while (exitOrBack != "x" && exitOrBack != "b")
         {
-            do
+            string[] options = { "Play", "Number of players (choose from 2 to 10): " + Players,
+                "Official or custom: "  + GameType, "Back", "Exit"};
+            
+            answer = _gameUi.UniversalMenu("New Game", options);
+            if (answer == 0)
             {
-                Console.WriteLine("New Game");
-                Console.WriteLine(MenuSeparator);
-                Console.WriteLine("p) Play");
-                Console.WriteLine("n) Number of players (choose from 2 to 10): " + Players);
-                Console.WriteLine("o) Official or custom: " + GameType);
-                Console.WriteLine("b) Back");
-                Console.WriteLine("x) eXit");
-                Console.WriteLine(MenuSeparator);
-                Console.Write("Your choice: ");
-
-                answer = Console.ReadLine()!.Trim();
-
-                if (!answer.ToLower().Equals("p") && !answer.ToLower().Equals("b") && !answer.ToLower().Equals("x") &&
-                    !answer.ToLower().Equals("n") && !answer.ToLower().Equals("o"))
-                {
-                    Console.Clear();
-                    Console.WriteLine("Wrong input!");
-                }
-
-                if (answer.ToLower().Equals("p"))
-                {
-                    Game game = new Game(Players);
-                    game.Run();
-                    answer = "b";
-                }
-                
-                else if (answer.ToLower().Equals("o"))
-                {
-                    Console.Clear();
-                    Console.WriteLine("1)Official");
-                    Console.WriteLine("2)Custom");
-                    Console.WriteLine("Choose game type (Right now this feature doesn't work and game will always be official) : ");
-                    
-                    var input = Console.ReadLine()!.Trim();
-                    
-                    if (input.ToLower().Equals("2") || input.ToLower().Equals("c"))
-                    {
-                        Console.Clear();
-                        GameType = "Custom";
-                    }
-                    else if (input.ToLower().Equals("1") || input.ToLower().Equals("o") )
-                    {
-                        Console.Clear();
-                        GameType = "Official";
-                    }
-                    else
-                    {
-                        Console.Clear();
-                        Console.WriteLine("Wrong input! Must choose official or custom");
-                    }
-                } 
-                else if (answer.ToLower().Equals("n"))
-                {
-                    Console.Clear();
-                    Console.WriteLine("Choose number of players: ");
-                    var number = Console.ReadLine()?.Trim();
-                    int integer;
-                    if (int.TryParse(number, out integer))
-                    {
-                        if (integer is >= 2 and <= 10)
-                        {
-                            Players = integer;
-                            Console.Clear();
-                            Console.WriteLine("Player amount has been successfully changed!");
-                            Console.WriteLine();
-                        }
-                        else
-                        {
-                            Console.Clear();
-                            Console.WriteLine("Number of players must be from 2 to 10!");
-                            Console.WriteLine();
-                        }
-                    }
-                    else
-                    {
-                        Console.Clear();
-                        Console.WriteLine("Input is incorrect, player amount is not changed!");
-                        Console.WriteLine();
-                    }
-                }
-
-            } while (!answer.ToLower().Equals("b") && !answer.ToLower().Equals("x"));
+                Game game = new Game(Players);
+                game.Run();
+                exitOrBack = "b";
+            }
+            else if (answer == 1)
+            {
+                Players = _gameUi.DemandNumber("choose from 2 to 10: ", 2, 10);
+            }
+            else if (answer == 2)
+            {
+                string[] smallOptions = { "Official", "Custom (not implemented yet)"};
+                GameType = smallOptions[_gameUi.UniversalMenu("GAME TYPE", smallOptions)];
+            } else if (answer == 3)
+            {
+                exitOrBack = "b";
+            }
+            else
+            {
+                exitOrBack = "x";
+            }
         }
-        Console.Clear();
-        return answer;
+
+        return exitOrBack;
+
+
+
     } 
 
     private string LoadGameFormat()
     {
-        string answer;
-        do
+        string exitOrBack = "";
+        while (exitOrBack != "b" && exitOrBack != "x")
         {
-            Console.WriteLine("Load Game");
-            Console.WriteLine(MenuSeparator);
-            int x = 1;
-            
-            
             // if web application, using database
             var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
                 .UseSqlite("Data Source=app.db")
@@ -202,38 +128,50 @@ public class GameMenu
             
             
             var savedGames = _gameRepository.GetSaveGames();
+            List<string> abc = new List<string>();
             foreach (var saveGame in savedGames)
             {
-                Console.WriteLine(x + ") " + saveGame);
-                x++;    
+                
+                var tempString = saveGame.ToString();
+                abc.Add(tempString.Trim());
             }
+            abc.Add("Back");
+            abc.Add("Exit");
             
-            Console.WriteLine();
-            Console.WriteLine("b) Back");
-            Console.WriteLine("x) eXit");
-            Console.WriteLine(MenuSeparator);
-            Console.Write("Your Choice: ");
-            answer = Console.ReadLine()!.Trim();
-            Console.Clear();
-            int saveNumber;
-            if (int.TryParse(answer, out saveNumber))
+            
+            int answer = _gameUi.UniversalMenu("Load Game",ToStringArray(abc));
+
+            if (answer <= savedGames.Count - 1)
             {
-                if (saveNumber > 0 && savedGames.Count >= saveNumber)
-                {
-                    Console.Clear();
-                    Game game = new Game(_gameRepository.LoadGame(savedGames[saveNumber - 1].Item1));
-                    game.Run();
-                }
+                Game game = new Game(_gameRepository.LoadGame(savedGames[answer].Item1));
+                game.Run();
             }
-            if (!answer.ToLower().Equals("x") && !answer.ToLower().Equals("b"))
+
+            else if (answer == savedGames.Count)
             {
-                Console.Clear();
-                Console.WriteLine("Wrong input!");
+                exitOrBack = "b";
             }
-        } while (!answer.ToLower().Equals("x") && !answer.ToLower().Equals("b"));
-        
-        Console.Clear();
-        return answer;
+            else if (answer == savedGames.Count() + 1)
+            {
+                exitOrBack = "x";
+            }
+        }
+
+        return exitOrBack;
+    }
+
+
+
+    private string[] ToStringArray(List<string> list)
+    {
+        int length = list.Count;
+        string[] array = new string[length];
+        for (int i = 0; i < length; i++)
+        {
+            array[i] = list[i];
+        }
+
+        return array;
     }
     
     
