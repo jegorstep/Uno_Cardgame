@@ -7,20 +7,22 @@ public class Player
     public List<Card> Hand { get; set; } = new List<Card>();
     public int Points { get; set; } = 0;
     
-    public bool isHuman { get; set;}
+    public bool IsHuman { get; set;}
     
     public Player(string name, bool isHuman)
     {
         Name = name;
-        this.isHuman = isHuman;
+        this.IsHuman = isHuman;
     }
 
-    public void GetHandInString()
+    public string GetHandInString()
     {
+        string s = "";
         foreach (var card in Hand)
         {
-            Console.Write(card);
-            Console.Write(" | ");
+            s += card + " | ";
         }
+
+        return s;
     }
 }

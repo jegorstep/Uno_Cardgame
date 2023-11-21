@@ -9,7 +9,7 @@ public class GameUI
 
     private const string MenuSeparator = "=======================";
 
-    public int UniversalMenu(string title, string[] options)
+    public int UniversalMenu(string title, string[] options, bool clear = true)
     {
         _selectedOption = 0;
         Console.CursorVisible = false;
@@ -17,7 +17,11 @@ public class GameUI
         
         do
         {
-            Console.Clear();
+            if (clear)
+            {
+                Console.Clear();
+            }
+
             Console.WriteLine(title);
             Console.WriteLine(MenuSeparator);
             PrintMenu(options);
@@ -30,16 +34,35 @@ public class GameUI
                 case ConsoleKey.UpArrow:
                     if (_selectedOption > 0)
                         _selectedOption--;
+                    else _selectedOption = options.Length - 1;
                     break;
+                    
                 case ConsoleKey.DownArrow:
                     if (_selectedOption < options.Length - 1)
                         _selectedOption++;
+                    else _selectedOption = 0;
                     break;
             }
         } while (key.Key != ConsoleKey.Enter);
 
         Console.Clear();
         return _selectedOption;
+    }
+
+    public int DisplayCards(string title, List<Card> cards)
+    {
+        string[] cardsArr = new string[cards.Count + 2];
+        int i = 0;
+        foreach (var card in cards)
+        {
+            cardsArr[i] = card.ToString();
+            i++;
+        }
+
+        cardsArr[i] = "Save";
+        cardsArr[i + 1] = "Exit";
+        
+        return UniversalMenu(title, cardsArr);
     }
 
     public int DemandNumber(string query, int start, int end)
@@ -75,6 +98,8 @@ public class GameUI
             Console.ResetColor();
         }
     }
+    
+    
     public void PrintDealCards()
     {
         Console.Clear();
@@ -114,20 +139,19 @@ public class GameUI
         Console.WriteLine(player.Name + " has now " + player.Points + " points!");
         Console.WriteLine();
     }
-
-    public void PrintPlayerSaveOrExit()
+    
+    public string[] ListToStringArray(List<string> list, string additional = default!, string exit = "Exit")
     {
-        Console.WriteLine();
-        Console.WriteLine("s) Save Game");
-        Console.WriteLine("x) Exit Game");
-    }
+        int length = list.Count;
+        string[] array = new string[length + 2];
+        for (int i = 0; i < length - 2; i++)
+        {
+            array[i] = list[i];
+        }
 
-    public void PrintColorChooseWild()
-    {
-        Console.WriteLine("y) Yellow");
-        Console.WriteLine("g) Green");
-        Console.WriteLine("b) Blue");
-        Console.WriteLine("r) Red");
-        Console.Write("Choose color: ");
+        array[length - 2] = additional;
+        array[length - 1] = exit;
+
+        return array;
     }
 }

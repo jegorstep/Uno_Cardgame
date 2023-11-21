@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using DAL;
+﻿using DAL;
 using GameEngine;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,12 +12,8 @@ public class GameMenu
     
 
     private string _title;
-    public int Players = 2;
-    public string GameType = "Official";
-    
-    
-    private const string MenuSeparator = "=======================";
-
+    private int _players = 2;
+    private string _gameType = "Official";
 
     public GameMenu(string title)
     {
@@ -65,28 +60,29 @@ public class GameMenu
     private string NewGameFormat()
     {
         var exitOrBack = "";
-        int answer;
+        
 
         while (exitOrBack != "x" && exitOrBack != "b")
         {
-            string[] options = { "Play", "Number of players (choose from 2 to 10): " + Players,
-                "Official or custom: "  + GameType, "Back", "Exit"};
+            string[] options = { "Play", "Number of players (choose from 2 to 10): " + _players,
+                "Official or custom: "  + _gameType, "Back", "Exit"};
             
-            answer = _gameUi.UniversalMenu("New Game", options);
+            int answer = _gameUi.UniversalMenu("New Game", options);
+            
             if (answer == 0)
             {
-                Game game = new Game(Players);
+                Game game = new Game(_players);
                 game.Run();
                 exitOrBack = "b";
             }
             else if (answer == 1)
             {
-                Players = _gameUi.DemandNumber("choose from 2 to 10: ", 2, 10);
+                _players = _gameUi.DemandNumber("choose from 2 to 10: ", 2, 10);
             }
             else if (answer == 2)
             {
                 string[] smallOptions = { "Official", "Custom (not implemented yet)"};
-                GameType = smallOptions[_gameUi.UniversalMenu("GAME TYPE", smallOptions)];
+                _gameType = smallOptions[_gameUi.UniversalMenu("GAME TYPE", smallOptions)];
             } else if (answer == 3)
             {
                 exitOrBack = "b";
@@ -135,11 +131,9 @@ public class GameMenu
                 var tempString = saveGame.ToString();
                 abc.Add(tempString.Trim());
             }
-            abc.Add("Back");
-            abc.Add("Exit");
             
             
-            int answer = _gameUi.UniversalMenu("Load Game",ToStringArray(abc));
+            int answer = _gameUi.UniversalMenu("Load Game",_gameUi.ListToStringArray(abc,"Back"));
 
             if (answer <= savedGames.Count - 1)
             {
@@ -159,20 +153,5 @@ public class GameMenu
 
         return exitOrBack;
     }
-
-
-
-    private string[] ToStringArray(List<string> list)
-    {
-        int length = list.Count;
-        string[] array = new string[length];
-        for (int i = 0; i < length; i++)
-        {
-            array[i] = list[i];
-        }
-
-        return array;
-    }
-    
     
 }
