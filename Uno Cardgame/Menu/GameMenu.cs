@@ -71,7 +71,7 @@ public class GameMenu
             
             if (answer == 0)
             {
-                Game game = new Game(_players);
+                Game game = new Game(_players, _gameType);
                 game.Run();
                 exitOrBack = "b";
             }
@@ -81,7 +81,7 @@ public class GameMenu
             }
             else if (answer == 2)
             {
-                string[] smallOptions = { "Official", "Custom (not implemented yet)"};
+                string[] smallOptions = { "Official", "Custom"};
                 _gameType = smallOptions[_gameUi.UniversalMenu("GAME TYPE", smallOptions)];
             } else if (answer == 3)
             {
@@ -118,7 +118,7 @@ public class GameMenu
             
             
             // if file save system
-            // gameRepository = new GameRepositoryFileSystem(db);
+            // _gameRepository = new GameRepositoryFileSystem();
             // end of file save system
             
             
@@ -131,9 +131,12 @@ public class GameMenu
                 var tempString = saveGame.ToString();
                 abc.Add(tempString.Trim());
             }
+            abc.Add("Back");
+            abc.Add("Exit");
             
+            string[] abcArray = abc.ToArray();
             
-            int answer = _gameUi.UniversalMenu("Load Game",_gameUi.ListToStringArray(abc,"Back"));
+            int answer = _gameUi.UniversalMenu("Load Game", abcArray);
 
             if (answer <= savedGames.Count - 1)
             {

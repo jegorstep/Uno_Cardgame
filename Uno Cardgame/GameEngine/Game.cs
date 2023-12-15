@@ -13,11 +13,34 @@ public class Game
     private bool _isNewGame = true;
     private Random _random = new Random();
     private GameUI _gameUi = new GameUI();
-    
-    public Game(int players)
+
+    public Game(int players, string gameType)
     {
         _gameState.PlayerAmount = players;
+        if (gameType.Equals("Custom"))
+        {
+            string[] options = { "Yes", "No" };
+            int answer = _gameUi.UniversalMenu("Do you want short game? (one round)", options);
+            if (answer == 0)
+            {
+                _gameState.ShortGame = true;
+            }
+
+            string[] maxAmountOfCards = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+            answer = _gameUi.UniversalMenu("How many cards will be in your hand?", maxAmountOfCards);
+            _gameState.MaxCardsInHand = answer + 1;
+
+            answer = _gameUi.UniversalMenu(
+                "Do you want add 'swapping seven' rule? \n(You can choose player with whom you can swap cards)",
+                options);
+            if (answer == 0)
+            {
+                _gameState.SwappingCards = true;
+            }
+        }
     }
+
+
 
     public Game(GameState gameState)
     {
@@ -37,6 +60,8 @@ public class Game
         {
             Console.WriteLine("Your turn: " + _gameState.Players[_gameState.IndexOfActivePlayer].Name);
             Thread.Sleep(2000);
+            Console.WriteLine(_gameState.Players[_gameState.IndexOfActivePlayer].Name + " has " +
+                               _gameState.Players[_gameState.IndexOfActivePlayer].Hand.Count + " cards");
             Console.WriteLine("Card on discard pile is: " + _gameState.LastCardOnDiscardPile!);
             Thread.Sleep(2000);
             PlayerAction();
@@ -47,6 +72,14 @@ public class Game
                 break;
             }
             Player player = CheckHands();
+            if (player != null && _gameState.ShortGame)
+            {
+                Console.WriteLine();
+                Console.WriteLine(player.Name.ToUpper() + " WON THE GAME, CONGRATULATIONS!");
+                Thread.Sleep(4000);
+                break;
+            }
+            
             if (CountPoints(player))
             {
                 _gameUi.PrintEndGame();
@@ -76,6 +109,9 @@ public class Game
         }
         else
         {
+            
+            Console.WriteLine("\n(Press any KEY to continue)");
+            Console.ReadKey(true);
             while (true)
             {
                 string title = "Previously played card: " + _gameState.LastCardOnDiscardPile + "\n" +
@@ -108,7 +144,7 @@ public class Game
                         break;
                     }
                 }
-                
+                Console.Clear();
             }
             ActionManager(player, actionCard);
         }
@@ -201,6 +237,23 @@ public class Game
                 DrawTwo();
                 DrawTwo();
             }
+            else if (actionCard.CardValue == Card.Value.Seven && _gameState.SwappingCards)
+            {
+                List<string> playersNames = new List<string>();
+                List<Player> players = new List<Player>();
+                
+                foreach (var igrok in _gameState.Players)
+                {
+                    if (!player.Equals(igrok))
+                    {
+                        playersNames.Add(igrok.Name);
+                        players.Add(igrok);
+                    }
+                }
+                int indexOfPlayer = _gameUi.UniversalMenu("Choose with whom you want to swap cards",playersNames.ToArray());
+                Player playerToSwapCards = players[indexOfPlayer];
+                (player.Hand, playerToSwapCards.Hand) = (playerToSwapCards.Hand, player.Hand);
+            }
             Console.WriteLine(player.Name + " plays card " + actionCard);
             Thread.Sleep(2000);
         }
@@ -292,7 +345,7 @@ public class Game
             
             
         // if file save system
-        // _saveSystem = new GameRepositoryFileSystem(db);
+        // _saveSystem = new GameRepositoryFileSystem();
         // end of file save system
         
         
@@ -371,7 +424,7 @@ public class Game
 
     private void CreatePlayers()
     {
-        string[] options = new string[_gameState.PlayerAmount];
+        string[] options = new string[_gameState.PlayerAmount + 1];
         for (int i = 0; i < options.Length; i++)
         {
             options[i] = i + "";
@@ -385,8 +438,7 @@ public class Game
             _gameState.Players.Add(robot);
         }
 
-
-
+        
         for (int i = 1; i <= _gameState.PlayerAmount - aiAmount; i++)
         {
             Console.Write("Type name for " + i + " human player: ");
@@ -446,9 +498,12 @@ public class Game
         {
             if (player.Hand.Count == 0)
             {
-                _gameUi.PrintWinnerOfRound(player.Name);
-                _gameState.Deck.SetUpDeck();
-                DealCard();
+                _gameUi.PrintWinnerOfRound(player.Name, _gameState.ShortGame);
+                if (!_gameState.ShortGame)
+                { 
+                    _gameState.Deck.SetUpDeck();
+                    DealCard();
+                }
                 return player;
             }
         }
@@ -472,11 +527,17 @@ public class Game
                     switch (card.CardValue)
                     {
                         case Card.Value.WildDrawFour:
+                            player.Points += 50;
+                            break;
                         case Card.Value.Wild:
                             player.Points += 50;
                             break;
                         case Card.Value.DrawTwo:
+                            player.Points += 20;
+                            break;
                         case Card.Value.Skip:
+                            player.Points += 20;
+                            break;
                         case Card.Value.Reverse:
                             player.Points += 20;
                             break;
@@ -498,4 +559,5 @@ public class Game
         
         return false;
     }
+    
 }

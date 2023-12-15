@@ -26,6 +26,11 @@ public class GameRepositoryFileSystem : IGameRepository
 
     public List<(Guid id, DateTime dt)> GetSaveGames()
     {
+        if (!Path.Exists(_saveLocation))
+        {
+            Directory.CreateDirectory(_saveLocation);
+        }
+        
         var data = Directory.EnumerateFiles(_saveLocation);
         var res = data
             .Select(

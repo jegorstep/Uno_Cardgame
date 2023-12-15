@@ -9,7 +9,7 @@ public class GameUI
 
     private const string MenuSeparator = "=======================";
 
-    public int UniversalMenu(string title, string[] options, bool clear = true)
+    public int UniversalMenu(string title, string[] options)
     {
         _selectedOption = 0;
         Console.CursorVisible = false;
@@ -17,10 +17,7 @@ public class GameUI
         
         do
         {
-            if (clear)
-            {
-                Console.Clear();
-            }
+            Console.Clear();
 
             Console.WriteLine(title);
             Console.WriteLine(MenuSeparator);
@@ -122,15 +119,18 @@ public class GameUI
         Console.WriteLine();
     }
 
-    public void PrintWinnerOfRound(string name)
+    public void PrintWinnerOfRound(string name, bool shortGame)
     {
         Console.WriteLine(name + " is a winner of this round!");
         Console.WriteLine();
-        Console.WriteLine("Counting Points...");
-        Thread.Sleep(5000);
-        Console.WriteLine("Dealing cards...");
-        Thread.Sleep(2000);
-        Console.WriteLine();
+        if (!shortGame)
+        {
+            Console.WriteLine("Counting Points...");
+            Thread.Sleep(5000);
+            Console.WriteLine("Dealing cards...");
+            Thread.Sleep(2000);
+            Console.WriteLine();
+        }
     }
 
     public void PrintWinnerPoints(Player player)
@@ -138,20 +138,5 @@ public class GameUI
         Console.WriteLine();
         Console.WriteLine(player.Name + " has now " + player.Points + " points!");
         Console.WriteLine();
-    }
-    
-    public string[] ListToStringArray(List<string> list, string additional = default!, string exit = "Exit")
-    {
-        int length = list.Count;
-        string[] array = new string[length + 2];
-        for (int i = 0; i < length - 2; i++)
-        {
-            array[i] = list[i];
-        }
-
-        array[length - 2] = additional;
-        array[length - 1] = exit;
-
-        return array;
     }
 }
