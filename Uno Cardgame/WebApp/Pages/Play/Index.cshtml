@@ -1,0 +1,101 @@
+@page
+@using Domain
+@model WebApp.Pages.Play.Index
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1 class="text-center">Play</h1>
+<h5>Reload Page in <span id="reload-label">-</span></h5>
+
+<div>
+    <td>Active Player:</td>
+    @Model.GameState.GetNameOfActivePlayer()
+</div>
+<div>
+    <td>Your cards:</td>
+    @foreach (var person in Model.GameState.Players)
+    {
+        if (Model.Name == person.Name)
+        {
+            @string.Join(", ", person.Hand.Select(p => p.ToString()))
+        }
+    }
+</div>
+
+<div>
+    <td>Last Card on DiscardPile: </td>
+    <span>@Model.GameState.LastCardOnDiscardPile</span>
+</div>
+
+
+<div>
+    
+    @if (Model.GameState.GetNameOfActivePlayer() == Model.Name)
+    {
+        <td>Possible Moves: </td>
+        foreach (var card in Model.GameEngine.PossibleMoves(Model.Player!.Hand))
+        {
+            if (card.CardColor == Card.Color.Wild)
+            {
+                <a asp-page="/Play/Wild" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+                   asp-route-card="@card.ToString()">@card.ToString()</a>
+            }
+            else
+            {
+                <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+                   asp-route-card="@card.ToString()">@card.ToString()</a>
+            }
+        }
+    }
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@section Scripts
+{
+    <script>
+    let timerValue = 5
+    let timerLabel = document.querySelector("#reload-label")
+    setInterval(() => {
+        timerValue--;
+        timerLabel.innerHTML = timerValue.toString();
+        if (timerValue<= 0) {
+        window.location.reload()
+        }
+       }, 1000)  
+    </script>
+}

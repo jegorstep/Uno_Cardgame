@@ -106,7 +106,7 @@ public class GameMenu
         {
             // if web application, using database
             var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
-                .UseSqlite("Data Source=app.db")
+                .UseSqlite("Data Source=" + Path.Combine(Path.GetTempPath(), "savedGamesDb"))
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
                 .Options;

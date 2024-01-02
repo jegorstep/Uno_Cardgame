@@ -3,7 +3,7 @@
 [Serializable]
 public class GameState
 {
-    public Guid Id = Guid.NewGuid();
+    public Guid Id { set; get; } = Guid.NewGuid();
     public int MaxCardsInHand { set; get; } = 7;
     public int PointsToWin { get; set; } = 500; //The first one, who scores PointsToWin points wins
     
@@ -14,9 +14,14 @@ public class GameState
     public DeckOfCards Deck { get; set; } = new DeckOfCards();
     public Card? LastCardOnDiscardPile { get; set; } = default!;
     
-    
     //Custom rules
-    public bool ShortGame { get; set; } = false;
-    public bool ThrowInDrawCards { get; set; } = false;
+    public bool ShortGame { get; set; } = false; 
     public bool SwappingCards { get; set; } = false;
+    
+    
+    public string GetNameOfActivePlayer()
+    {
+        return Players[IndexOfActivePlayer].Name;
+    }
+
 }

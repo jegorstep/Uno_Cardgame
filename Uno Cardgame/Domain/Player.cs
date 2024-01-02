@@ -3,6 +3,7 @@
 public class Player
 {
 
+    public Guid GamePlayerId { get; set; } = Guid.NewGuid();
     public string Name { get; set; }
     public List<Card> Hand { get; set; } = new List<Card>();
     public int Points { get; set; } = 0;

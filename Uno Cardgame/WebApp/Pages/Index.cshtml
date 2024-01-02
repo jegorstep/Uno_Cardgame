@@ -1,0 +1,31 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<style>
+    /* Optional: Apply styles to enhance the link appearance */
+    a {
+        color: #3498db; 
+        text-decoration: none; 
+        transition: color 0.3s ease; 
+    }
+
+    a:hover {
+        color: #1e87d8; /* Change color on hover */
+    }
+
+    .line-break {
+        margin-top: 150px; /* Adjust the margin as needed */
+    }
+</style>
+
+<div class="text-center">
+    <h1 class="display-4">UNO</h1>
+</div>
+
+<div class="text-center">
+    <h3 class="line-break"><a asp-page="Play">Play</a></h3>
+    <h3><a asp-page="/Games/Index">Load Game</a></h3>
+</div>

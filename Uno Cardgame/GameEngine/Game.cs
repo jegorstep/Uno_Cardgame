@@ -89,7 +89,7 @@ public class Game
         }
     }
     
-    private void PlayerAction()
+    public void PlayerAction()
     {
         Card actionCard = default!;
         if (_gameState.IndexOfActivePlayer >= _gameState.PlayerAmount)
@@ -123,7 +123,7 @@ public class Game
                 List<Card> possibleMoves = PossibleMoves(player.Hand);
                 if (possibleMoves.Count == 0)
                 {
-                    NoPossibleMoves(player);
+                    actionCard = NoPossibleMoves(player)!;
                     break;
                 }
                 else
@@ -203,7 +203,7 @@ public class Game
 
 
 
-    private void ActionManager(Player player, Card? actionCard)
+    public void ActionManager(Player player, Card? actionCard)
     {
         if (actionCard != null)
         {
@@ -315,6 +315,29 @@ public class Game
         
     }
 
+    public void WildForWeb(Card card, string color)
+    {
+        var player = _gameState.Players[_gameState.IndexOfActivePlayer];
+        
+        foreach (Card.Color colorInEnum in Enum.GetValues(typeof(Card.Color)))
+        {
+            if (color.Equals(colorInEnum.ToString()))
+            {
+                player.Hand.Remove(card);
+                card.CardColor = colorInEnum;
+                _gameState.LastCardOnDiscardPile = card;
+                break;
+            }
+        }
+        if (card.CardValue == Card.Value.WildDrawFour)
+        {
+            SkipPlayer();
+            DrawTwo();
+            DrawTwo();
+        }
+        SkipPlayer();
+    }
+
 
     private void DrawTwo()
     {
@@ -329,11 +352,11 @@ public class Game
         }
     }
 
-    private void SaveGame()
+    public void SaveGame()
     {
         // if web application, using database
         var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite("Data Source=app.db")
+            .UseSqlite("Data Source=" + Path.Combine(Path.GetTempPath(), "savedGamesDb"))
             .EnableDetailedErrors()
             .EnableSensitiveDataLogging()
             .Options;
@@ -377,7 +400,7 @@ public class Game
         }
     }
 
-    private List<Card> PossibleMoves(List<Card> playerHand)
+    public List<Card> PossibleMoves(List<Card> playerHand)
     {
         List<Card> possibleCardsToPlay = new List<Card>();
         List<Card> wildDrawFourCards = new List<Card>();

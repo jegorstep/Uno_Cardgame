@@ -1,0 +1,29 @@
+@page
+@model WebApp.Pages.Play.Wild
+
+@{
+    <h1 class="text-center">Choose Wild color</h1>
+}
+
+<div>
+    <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" 
+       asp-route-name="@Model.Name" asp-route-card="@Model.Card" asp-route-color="Yellow">Yellow</a>
+    
+    
+</div>
+
+<div>
+    <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" 
+       asp-route-name="@Model.Name" asp-route-card="@Model.Card" asp-route-color="Green">Green</a>
+</div>
+
+<div>
+    <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" 
+       asp-route-name="@Model.Name" asp-route-card="@Model.Card" asp-route-color="Blue">Blue</a>
+</div>
+
+<div>
+    <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" 
+       asp-route-name="@Model.Name" asp-route-card="@Model.Card" asp-route-color="Red">Red</a>
+</div>
+

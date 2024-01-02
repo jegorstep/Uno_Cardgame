@@ -16,7 +16,6 @@ public class GameRepositoryEF : IGameRepository
 
     public void Save(Guid id, GameState state)
     {
-        // is it already in db?
         var game = _ctx.Games.FirstOrDefault(g => g.Id == state.Id);
         if (game == null)
         {
