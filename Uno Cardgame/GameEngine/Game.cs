@@ -250,8 +250,20 @@ public class Game
                         players.Add(igrok);
                     }
                 }
-                int indexOfPlayer = _gameUi.UniversalMenu("Choose with whom you want to swap cards",playersNames.ToArray());
-                Player playerToSwapCards = players[indexOfPlayer];
+
+                Player playerToSwapCards;
+                if (player.IsHuman)
+                {
+                    int indexOfPlayer = _gameUi.UniversalMenu("Choose with whom you want to swap cards",
+                        playersNames.ToArray());
+                    playerToSwapCards = players[indexOfPlayer];
+                }
+                else
+                {
+                    int indexOfPlayer = _random.Next(players.Count);
+                    playerToSwapCards = players[indexOfPlayer];
+                }
+
                 (player.Hand, playerToSwapCards.Hand) = (playerToSwapCards.Hand, player.Hand);
                 _gameState.Log += player.Name + " swapped cards with " + playerToSwapCards.Name + "\n";
             }
