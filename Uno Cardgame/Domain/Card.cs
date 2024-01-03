@@ -49,4 +49,33 @@ public class Card
                 return "-";
         }
     }
+
+    public string IntValue(Value value)
+    {
+        if ((int)value == 10)
+        {
+            return "S";
+        }
+        else if ((int)value == 11)
+        {
+            return "R";
+        }
+        if ((int)value == 12)
+        {
+            return "DT";
+        }
+        else if ((int)value == 13)
+        {
+            return "W";
+        }
+        else if ((int)value == 14)
+        {
+            return "WD4";
+        }
+        return ((int)value).ToString();
+    }
+    public int IntColor(Color color)
+    {
+        return (int)color;
+    }
 }

@@ -68,7 +68,7 @@ public class Index : PageModel
                     GameEngine.SaveGame();
                     return Redirect("/Play/Wild?gameId=" + GameId + "&name=" + Name + "&card=" + CurrentCard);
                 }
-                else if (CurrentCard != null && CurrentCard.CardValue == Domain.Card.Value.Seven)
+                else if (CurrentCard != null && CurrentCard.CardValue == Domain.Card.Value.Seven && GameState.SwappingCards)
                 {
                     Player!.Hand.Add(CurrentCard);
                     GameEngine.SaveGame();

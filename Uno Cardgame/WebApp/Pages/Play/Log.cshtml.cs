@@ -13,7 +13,7 @@ public class Log : PageModel
     
     [BindProperty(SupportsGet = true)] public Guid GameId { get; set; }
     
-    [BindProperty(SupportsGet = true)] public Guid Name { get; set; }
+    [BindProperty(SupportsGet = true)] public string? Name { get; set; }
     
     [BindProperty(SupportsGet = true)] public string? Winner { get; set; }
     
