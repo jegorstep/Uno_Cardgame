@@ -1,4 +1,5 @@
-﻿using DAL;
+﻿using System.Runtime.InteropServices;
+using DAL;
 using Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -71,7 +72,7 @@ public class Game
                 _exitGame = false;
                 break;
             }
-            Player player = CheckHands();
+            Player? player = CheckHands();
             if (player != null && _gameState.ShortGame)
             {
                 Console.WriteLine();
@@ -168,34 +169,33 @@ public class Game
     }
 
 
-    private Card? NoPossibleMoves(Player player)
+    public Card? NoPossibleMoves(Player player)
     {
         if (_gameState.Deck.GetDeck.TryPop(out var card))
         {
             Console.WriteLine("It seems " + player.Name + " don't have moves, take card...");
-            Thread.Sleep(2000);
+            _gameState.Log += "It seems " + player.Name + " don't have moves, take card..." + "\n";
+            // Thread.Sleep(2000);
             if (card.CardColor != _gameState.LastCardOnDiscardPile!.CardColor
                 && card.CardValue != _gameState.LastCardOnDiscardPile.CardValue &&
                 card.CardColor != Card.Color.Wild)
             {
                 Console.WriteLine("Card is not playable, skip turn, " + player.Name + " sucks!");
-                Thread.Sleep(2000);
+                _gameState.Log += "Card is not playable, skip turn, " + player.Name + " sucks!" + "\n";
+                //Thread.Sleep(2000);
                 player.Hand.Add(card);
                 return null;
             }
-            
             Console.WriteLine("Seems you found right card, you play card " + card);
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
             return card;
             
         }
-        else
-        {
-            Console.WriteLine("Deck is empty, refresh it");
-            Thread.Sleep(2000);
-            RefreshDeckOfCards();
-            card = NoPossibleMoves(player)!;
-        }
+        Console.WriteLine("Deck is empty, refresh it");
+        //Thread.Sleep(2000);
+        RefreshDeckOfCards();
+        card = NoPossibleMoves(player)!;
+        
 
         return card;
 
@@ -253,20 +253,22 @@ public class Game
                 int indexOfPlayer = _gameUi.UniversalMenu("Choose with whom you want to swap cards",playersNames.ToArray());
                 Player playerToSwapCards = players[indexOfPlayer];
                 (player.Hand, playerToSwapCards.Hand) = (playerToSwapCards.Hand, player.Hand);
+                _gameState.Log += player.Name + " swapped cards with " + playerToSwapCards.Name + "\n";
             }
             Console.WriteLine(player.Name + " plays card " + actionCard);
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
         }
         
         if (player.Hand.Count == 1)
         {
             Console.WriteLine(player.Name + " SAYS  U N O!");
-            Thread.Sleep(2000);
+            _gameState.Log += player.Name + " SAYS  U N O!" + "\n";
+            //Thread.Sleep(2000);
         }
         SkipPlayer();
     }
 
-    private void RefreshDeckOfCards()
+    public void RefreshDeckOfCards()
     {
         List<Card> cardsRemainedInGame = new List<Card>(); // action card + all players cards
         foreach (var player in _gameState.Players)
@@ -305,12 +307,15 @@ public class Game
             input = _random.Next(colors.Length);
             Console.WriteLine(player.Name + " chooses color " + colors[input]);
             actionCard.CardColor = eColors[input];
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
         }
         else
         {
             input = _gameUi.UniversalMenu("Choose color", colors);
             actionCard.CardColor = eColors[input];
+            Console.WriteLine(player.Name + " chooses color " + colors[input]);
+            
+            _gameState.Log += player.Name + " chooses color " + colors[input] + "\n";
         }
         
     }
@@ -326,6 +331,7 @@ public class Game
                 player.Hand.Remove(card);
                 card.CardColor = colorInEnum;
                 _gameState.LastCardOnDiscardPile = card;
+                _gameState.Log += player.Name + " chooses color " + color + "\n";
                 break;
             }
         }
@@ -375,7 +381,7 @@ public class Game
         
         Console.WriteLine();
         _saveSystem.Save(_gameState.Id, _gameState);
-        Thread.Sleep(1000);
+        //Thread.Sleep(1000);
         Console.WriteLine("Game have been saved successfully!");
     }
 
@@ -433,7 +439,7 @@ public class Game
     }
     
     
-    private void DealCard()
+    public void DealCard()
     {
         foreach (var gamePlayer in _gameState.Players)
         {
@@ -447,6 +453,7 @@ public class Game
 
     private void CreatePlayers()
     {
+        List<Player> tempPlayersList = new List<Player>();
         string[] options = new string[_gameState.PlayerAmount + 1];
         for (int i = 0; i < options.Length; i++)
         {
@@ -461,16 +468,56 @@ public class Game
             _gameState.Players.Add(robot);
         }
 
-        
-        for (int i = 1; i <= _gameState.PlayerAmount - aiAmount; i++)
+
+        while (true)
         {
-            Console.Write("Type name for " + i + " human player: ");
-            var newPlayerName = Console.ReadLine()!.Trim();
-            Player player = new Player(newPlayerName, true);
+            string ErrorMessage = "";
+            List<string> names = new List<string>();
+            tempPlayersList = new List<Player>();
+            for (int i = 1; i <= _gameState.PlayerAmount - aiAmount; i++)
+            {
+                Console.Write("Type name for " + i + " human player: ");
+                var newPlayerName = Console.ReadLine()!.Trim();
+                names.Add(newPlayerName);
+                Player player = new Player(newPlayerName, true);
+                tempPlayersList.Add(player);
+                Console.WriteLine();
+            }
+            bool minLength = false;
+            bool maxLength = false;
+            bool copyNames = false;
+            foreach (var variabName in names)
+            {
+                if (variabName.Length < 2 && !minLength)
+                {
+                    ErrorMessage += "Name length must be longer than 2 letters!\n";
+                    minLength = true;
+                }
+                else if (variabName.Length > 20 && !maxLength)
+                {
+                    ErrorMessage += "Name length must be not longer than 20 letters!\n";
+                    maxLength = true;
+                }
+
+                else if (names.Count != names.Distinct().Count())
+                {
+                    ErrorMessage += "No duplicates allowed!\n";
+                    copyNames = true;
+                }
+            }
+
+            if (!copyNames && !maxLength && !minLength)
+            {
+                break;
+            }
+        }
+
+        foreach (var player in tempPlayersList)
+        {
             _gameState.Players.Add(player);
-            Console.WriteLine();
         }
     }
+    
 
     private void IntroducePlayers()
     {
@@ -514,14 +561,44 @@ public class Game
         IntroducePlayers();
     }
 
+    public void SetUpGame(List<string> players, int humanPlayers)
+    {
+        for (int i = 0; i < humanPlayers; i++)
+        {
+            Player player = new Player(players[i], true);
+            _gameState.Players.Add(player);
+        }
 
-    private Player CheckHands()
+        for (int i = humanPlayers; i < players.Count; i++)
+        {
+            Player player = new Player(players[i], false);
+            _gameState.Players.Add(player);
+        }
+        _gameState.Deck.SetUpDeck();
+        while (true) 
+        {
+            _gameState.LastCardOnDiscardPile = _gameState.Deck.GetDeck.Peek();
+            if (_gameState.LastCardOnDiscardPile.CardColor != Card.Color.Wild)
+            {
+                _gameState.LastCardOnDiscardPile = _gameState.Deck.GetDeck.Pop();
+                break;
+            }
+
+            _gameState.Deck.SetUpDeck();
+        }
+        DealCard();
+        _gameState.IndexOfActivePlayer = 0;
+    }
+
+
+    public Player? CheckHands()
     {
         foreach (var player in _gameState.Players)
         {
             if (player.Hand.Count == 0)
             {
                 _gameUi.PrintWinnerOfRound(player.Name, _gameState.ShortGame);
+                _gameState.Log += player.Name + " is a winner of the round!";
                 if (!_gameState.ShortGame)
                 { 
                     _gameState.Deck.SetUpDeck();
@@ -530,11 +607,10 @@ public class Game
                 return player;
             }
         }
-
-        return null!;
+        return null;
     }
 
-    private bool CountPoints(Player? player)
+    public bool CountPoints(Player? player)
     {
         
         if (player == null)

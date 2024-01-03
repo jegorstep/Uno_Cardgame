@@ -1,0 +1,16 @@
+@page
+@using Domain
+@model WebApp.Pages.Play.Log
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1 class="text-center">Log</h1>
+
+<div>
+    @foreach (var info in Model.LoggedInfo)
+    {
+        <div>@info</div>
+    }
+</div>

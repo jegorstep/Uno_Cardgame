@@ -28,8 +28,9 @@ public class Index : PageModel
     [BindProperty(SupportsGet = true)] public string? Card { get; set; }
     [BindProperty(SupportsGet = true)] public string? Color { get; set; }
     [BindProperty(SupportsGet = true)] public string? Name { get; set; }
+    [BindProperty(SupportsGet = true)] public string? TakeCard { get; set;}
     
-    public Card CurrentCard = default!;
+    public Card? CurrentCard;
     
     public Player? Player;
     
@@ -39,6 +40,8 @@ public class Index : PageModel
         GameState = _gameRepository.LoadGame(GameId);
 
         GameEngine = new Game(GameState);
+
+        Player? winner = GameEngine.CheckHands();
         
         foreach (Player player in GameState.Players)
         {
@@ -48,28 +51,65 @@ public class Index : PageModel
             }
         }
 
-        if (Card != null)
+        if (!Player!.IsHuman && GameState.GetNameOfActivePlayer().Equals(Player.Name))
         {
-            foreach (var card in Player!.Hand)
-            {
-                if (card.ToString().Equals(Card))
-                {
-                    CurrentCard = card;
-                }
-            }
-            if (CurrentCard.CardColor == Domain.Card.Color.Wild)
-            {
-                GameEngine.WildForWeb(CurrentCard, Color!);
-            }
-            else
-            {
-                GameEngine.ActionManager(Player, CurrentCard);
-            }
-
+            GameEngine.PlayerAction();
             GameEngine.SaveGame();
+        }
 
-            return RedirectToPage("/Play?gameId=" + GameId + "&name=" + Name);
+        if (winner == null)
+        {
+            if (TakeCard == "true")
+            {
+                CurrentCard = GameEngine.NoPossibleMoves(Player!);
+                if (CurrentCard != null && CurrentCard.CardColor == Domain.Card.Color.Wild)
+                {
+                    Player!.Hand.Add(CurrentCard);
+                    GameEngine.SaveGame();
+                    return Redirect("/Play/Wild?gameId=" + GameId + "&name=" + Name + "&card=" + CurrentCard);
+                }
+                GameEngine.ActionManager(Player!, CurrentCard);
+                GameEngine.SaveGame();
+                return Redirect("/Play?gameId=" + GameId + "&name=" + Name);
+                
+            }
+
+            if (Card != null)
+            {
+                foreach (var card in Player!.Hand)
+                {
+                    if (card.ToString().Equals(Card))
+                    {
+                        CurrentCard = card;
+                    }
+                }
+                if (CurrentCard!.CardColor == Domain.Card.Color.Wild)
+                {
+                    GameEngine.WildForWeb(CurrentCard, Color!);
+                }
+                else
+                {
+                    GameEngine.ActionManager(Player, CurrentCard);
+                }
+
+                GameEngine.SaveGame();
+
+                return Redirect("/Play?gameId=" + GameId + "&name=" + Name);
+            }
+        }
+        else
+        {
+            if (GameEngine.CountPoints(winner)) 
+            {
+                GameEngine.SaveGame(); // TODO!!! check points
+                return Redirect("/Play/Gameover?gameId=" + GameId + "&name=" + Name); // TODO!!! GameOver page, Check json saves
+            }
+            GameEngine.SaveGame();
+            return Redirect("/Play?gameId=" + GameId + "&name=" + Name); 
         }
         return Page();
+        
+        //TODO!!! if needed, add for custom rules functions
+        //TODO!!! css if you are not lazy
     }
 }

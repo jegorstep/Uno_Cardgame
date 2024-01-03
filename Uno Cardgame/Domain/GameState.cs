@@ -13,6 +13,7 @@ public class GameState
     public List<Player> Players { get; set; } = new List<Player>();
     public DeckOfCards Deck { get; set; } = new DeckOfCards();
     public Card? LastCardOnDiscardPile { get; set; } = default!;
+    public string Log { get; set; } = default!;
     
     //Custom rules
     public bool ShortGame { get; set; } = false; 

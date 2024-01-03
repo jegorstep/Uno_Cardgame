@@ -1,7 +1,10 @@
+using DAL;
+using Domain;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Domain.Database;
 using Microsoft.AspNetCore.Mvc;
+using Game = GameEngine.Game;
+using Player = Domain.Database.Player;
 
 namespace WebApp.Pages_Players
 {
@@ -12,10 +15,14 @@ namespace WebApp.Pages_Players
         
         [BindProperty(SupportsGet = true)]
         public Guid? GameId { get; set; }
+        
 
-        public IndexModel(DAL.AppDbContext context)
+        private IGameRepository gameRepository = default!;
+
+        public IndexModel(AppDbContext context)
         {
-            _context = context;
+            _context = context; 
+            gameRepository = new GameRepositoryEF(_context);
 
         }
 

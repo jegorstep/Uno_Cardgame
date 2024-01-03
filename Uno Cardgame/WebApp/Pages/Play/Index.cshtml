@@ -13,6 +13,12 @@
     <td>Active Player:</td>
     @Model.GameState.GetNameOfActivePlayer()
 </div>
+
+<div>
+    <td>Your Points:</td>
+    @Model.Player!.Points
+</div>
+
 <div>
     <td>Your cards:</td>
     @foreach (var person in Model.GameState.Players)
@@ -35,22 +41,35 @@
     @if (Model.GameState.GetNameOfActivePlayer() == Model.Name)
     {
         <td>Possible Moves: </td>
-        foreach (var card in Model.GameEngine.PossibleMoves(Model.Player!.Hand))
+        if (Model.GameEngine.PossibleMoves(Model.Player!.Hand).Count == 0)
         {
-            if (card.CardColor == Card.Color.Wild)
+            <p>You don't have possible moves, </p>
+            <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+               asp-route-takeCard="true">Take Card</a>
+            <p> (If card is playable, you will play it automatically, unless it is not playable)</p>
+        }
+        else
+        {
+            foreach (var card in Model.GameEngine.PossibleMoves(Model.Player!.Hand))
             {
-                <a asp-page="/Play/Wild" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
-                   asp-route-card="@card.ToString()">@card.ToString()</a>
-            }
-            else
-            {
-                <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
-                   asp-route-card="@card.ToString()">@card.ToString()</a>
+                if (card.CardColor == Card.Color.Wild)
+                {
+                    <a asp-page="/Play/Wild" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+                       asp-route-card="@card.ToString()">@card.ToString()</a>
+                }
+                else
+                {
+                    <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+                       asp-route-card="@card.ToString()">@card.ToString()</a>
+                }
             }
         }
     }
     
 </div>
+
+
+<div> <a asp-page="/Play/Log" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name">Log</a></div>
 
 
 
@@ -88,7 +107,7 @@
 @section Scripts
 {
     <script>
-    let timerValue = 5
+    let timerValue = 3
     let timerLabel = document.querySelector("#reload-label")
     setInterval(() => {
         timerValue--;

@@ -6,6 +6,7 @@ public class GameUI
 {
     
     private int _selectedOption;
+    
 
     private const string MenuSeparator = "=======================";
 
@@ -122,6 +123,7 @@ public class GameUI
     public void PrintWinnerOfRound(string name, bool shortGame)
     {
         Console.WriteLine(name + " is a winner of this round!");
+        
         Console.WriteLine();
         if (!shortGame)
         {

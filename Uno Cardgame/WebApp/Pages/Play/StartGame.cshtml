@@ -1,0 +1,93 @@
+@page
+@model WebApp.Pages.Play.StartGame
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1 class="text-center">Choose Options for new game</h1>
+
+@if (Model.ErrorMessage != null)
+{
+    foreach (var line in Model.ErrorMessage.Split("\n"))
+    {
+        <div class="text-danger">@line</div>
+    }
+}
+
+<form method="post">
+    <label for="totalPlayers">Total Number of Players:</label>
+    <select id="totalPlayers" name="TotalPlayers" onchange="updateHumanPlayersOptions()">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+        <!-- Add more options as needed -->
+    </select>
+
+    <label for="humanPlayers">Total Number of Human Players:</label>
+    <select id="humanPlayers" name="HumanPlayers">
+        <!-- Options will be dynamically added here based on the totalPlayers selection -->
+    </select>
+
+    <div id="realPlayerInputsContainer">
+        <!-- Dynamically generated input fields for real players will be placed here -->
+    </div>
+
+    <button type="submit">Start Game</button>
+</form>
+
+@if (Model.AllPlayerNames != null) {
+foreach (var player in Model.AllPlayerNames)
+{
+    <td>@player</td>
+}
+}
+
+<script>
+    function updateHumanPlayersOptions() {
+        let totalPlayers = document.getElementById("totalPlayers").value;
+        let humanPlayersDropdown = document.getElementById("humanPlayers");
+
+        // Clear previous options
+        humanPlayersDropdown.innerHTML = "";
+
+        // Generate options for human players based on the selected total players
+        for (let i = 0; i <= totalPlayers; i++) {
+            let option = document.createElement("option");
+            option.value = i;
+            option.text = i;
+            humanPlayersDropdown.appendChild(option);
+        }
+    }
+    function generateRealPlayerInputs() {
+            let totalPlayers = document.getElementById("humanPlayers").value;
+            let realPlayerContainer = document.getElementById("realPlayerInputsContainer");
+    
+            // Clear previous content
+            realPlayerContainer.innerHTML = "";
+    
+            // Generate input fields for real players
+            for (let i = 0; i < totalPlayers; i++) {
+                let input = document.createElement("input");
+                input.type = "text";
+                input.name = "AllPlayerNames";
+                input.placeholder = "Enter name for Player " + (i + 1);
+                realPlayerContainer.appendChild(input);
+                realPlayerContainer.appendChild(document.createElement("br"));
+            }
+        }
+        
+        document.getElementById("humanPlayers").addEventListener("change", generateRealPlayerInputs);
+    
+        // Initial call to generate input fields based on the default value
+        generateRealPlayerInputs();
+
+    // Initial call to update options based on the default value
+    updateHumanPlayersOptions();
+</script>

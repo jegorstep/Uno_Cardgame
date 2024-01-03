@@ -8,6 +8,8 @@ public class Player : BaseEntity
     public string Name { get; set; } = default!;
 
     public Player? GamePlayer { get; set; }
+    
+    public bool IsHuman { get; set; }
 
     // use convenience naming <class>Id
     // nullability decides relationship type - mandatory or not
