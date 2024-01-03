@@ -1,0 +1,20 @@
+@page
+@using Domain
+@model WebApp.Pages.Play.Swap
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+<h1 class="text-center">Choose with whom you want to swap cards</h1>
+
+@foreach (var player in Model.PlayersNames) {
+    <div>
+        @if (player != Model.Name)
+        {
+            <a asp-page="/Play/Swap" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+               asp-route-playerToSwapCards="@player" asp-route-card="@Model.Card">@Model.Name</a>
+        }
+    </div>
+}

@@ -256,6 +256,7 @@ public class Game
                 _gameState.Log += player.Name + " swapped cards with " + playerToSwapCards.Name + "\n";
             }
             Console.WriteLine(player.Name + " plays card " + actionCard);
+            _gameState.Log += player.Name + " plays card " + actionCard + "\n";
             //Thread.Sleep(2000);
         }
         
@@ -385,7 +386,7 @@ public class Game
         Console.WriteLine("Game have been saved successfully!");
     }
 
-    private void SkipPlayer()
+    public void SkipPlayer()
     {
         if (_gameState.IsReverse)
         {
@@ -561,8 +562,16 @@ public class Game
         IntroducePlayers();
     }
 
-    public void SetUpGame(List<string> players, int humanPlayers)
+    public void SetUpGame(List<string> players, int humanPlayers, int firstPlayer, string gameType, 
+        bool shortGame, bool swapRule, int cardsAmount)
     {
+        if (gameType.ToLower() == "custom")
+        {
+            
+            _gameState.ShortGame = shortGame;
+            _gameState.SwappingCards = swapRule;
+            _gameState.MaxCardsInHand = cardsAmount;
+        }
         for (int i = 0; i < humanPlayers; i++)
         {
             Player player = new Player(players[i], true);
@@ -587,7 +596,15 @@ public class Game
             _gameState.Deck.SetUpDeck();
         }
         DealCard();
-        _gameState.IndexOfActivePlayer = 0;
+        if (players.Count == firstPlayer - 1)
+        {
+            Random random = new Random();
+            _gameState.IndexOfActivePlayer = random.Next(firstPlayer - 1);
+        }
+        else
+        {
+            _gameState.IndexOfActivePlayer = firstPlayer - 1;
+        }
     }
 
 
@@ -651,6 +668,7 @@ public class Game
         if (player.Points >= _gameState.PointsToWin)
         {
             Console.WriteLine(player.Name.ToUpper() + " WON THE GAME, CONGRATULATIONS!");
+            _gameState.Log += player.Name.ToUpper() + " WON THE GAME, CONGRATULATIONS!" + "\n";
             return true;
         }
 

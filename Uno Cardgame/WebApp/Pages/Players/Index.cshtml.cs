@@ -1,10 +1,7 @@
-using DAL;
-using Domain;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Domain.Database;
 using Microsoft.AspNetCore.Mvc;
-using Game = GameEngine.Game;
-using Player = Domain.Database.Player;
 
 namespace WebApp.Pages_Players
 {
@@ -15,14 +12,10 @@ namespace WebApp.Pages_Players
         
         [BindProperty(SupportsGet = true)]
         public Guid? GameId { get; set; }
-        
 
-        private IGameRepository gameRepository = default!;
-
-        public IndexModel(AppDbContext context)
+        public IndexModel(DAL.AppDbContext context)
         {
-            _context = context; 
-            gameRepository = new GameRepositoryEF(_context);
+            _context = context;
 
         }
 
@@ -33,9 +26,9 @@ namespace WebApp.Pages_Players
             if (_context.Players != null)
             {
                 Player = await _context.Players
-                .Include(p => p.Game)
-                .Where(p=> p.GameId.Equals(GameId))
-                .ToListAsync();
+                    .Include(p => p.Game)
+                    .Where(p=> p.GameId.Equals(GameId))
+                    .ToListAsync();
             }
         }
     }

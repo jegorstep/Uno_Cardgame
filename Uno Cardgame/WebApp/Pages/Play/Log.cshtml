@@ -9,8 +9,11 @@
 <h1 class="text-center">Log</h1>
 
 <div>
-    @foreach (var info in Model.LoggedInfo)
+    @if (Model.LoggedInfo != null)
     {
-        <div>@info</div>
+        foreach (var info in Model.LoggedInfo)
+        {
+            <p>@info</p>
+        }
     }
 </div>

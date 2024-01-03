@@ -11,12 +11,13 @@
 
 <div>
     <td>Active Player:</td>
-    @Model.GameState.GetNameOfActivePlayer()
+    @Model.GameState.GetActivePlayer().Name
 </div>
 
 <div>
     <td>Your Points:</td>
     @Model.Player!.Points
+    
 </div>
 
 <div>
@@ -38,7 +39,7 @@
 
 <div>
     
-    @if (Model.GameState.GetNameOfActivePlayer() == Model.Name)
+    @if (Model.GameState.GetActivePlayer().Name == Model.Name)
     {
         <td>Possible Moves: </td>
         if (Model.GameEngine.PossibleMoves(Model.Player!.Hand).Count == 0)
@@ -55,6 +56,11 @@
                 if (card.CardColor == Card.Color.Wild)
                 {
                     <a asp-page="/Play/Wild" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+                       asp-route-card="@card.ToString()">@card.ToString()</a>
+                }
+                else if (Model.GameState.SwappingCards && card.CardValue == Card.Value.Seven)
+                {
+                    <a asp-page="/Play/Swap" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
                        asp-route-card="@card.ToString()">@card.ToString()</a>
                 }
                 else

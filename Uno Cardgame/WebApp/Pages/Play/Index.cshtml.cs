@@ -51,7 +51,7 @@ public class Index : PageModel
             }
         }
 
-        if (!Player!.IsHuman && GameState.GetNameOfActivePlayer().Equals(Player.Name))
+        if (!GameState.GetActivePlayer().IsHuman)
         {
             GameEngine.PlayerAction();
             GameEngine.SaveGame();
@@ -67,6 +67,12 @@ public class Index : PageModel
                     Player!.Hand.Add(CurrentCard);
                     GameEngine.SaveGame();
                     return Redirect("/Play/Wild?gameId=" + GameId + "&name=" + Name + "&card=" + CurrentCard);
+                }
+                else if (CurrentCard != null && CurrentCard.CardValue == Domain.Card.Value.Seven)
+                {
+                    Player!.Hand.Add(CurrentCard);
+                    GameEngine.SaveGame();
+                    return Redirect("/Play/Swap?gameId=" + GameId + "&name=" + Name + "&card=" + CurrentCard);
                 }
                 GameEngine.ActionManager(Player!, CurrentCard);
                 GameEngine.SaveGame();
@@ -101,15 +107,12 @@ public class Index : PageModel
         {
             if (GameEngine.CountPoints(winner)) 
             {
-                GameEngine.SaveGame(); // TODO!!! check points
-                return Redirect("/Play/Gameover?gameId=" + GameId + "&name=" + Name); // TODO!!! GameOver page, Check json saves
+                GameEngine.SaveGame();
+                return Redirect("/Play/Gameover?gameId=" + GameId + "&name=" + Name + "&winner=" + winner.Name); 
             }
             GameEngine.SaveGame();
-            return Redirect("/Play?gameId=" + GameId + "&name=" + Name); 
+            return Redirect("/Play/Log?gameId=" + GameId + "&name=" + Name + "&winner=" + winner.Name); 
         }
         return Page();
-        
-        //TODO!!! if needed, add for custom rules functions
-        //TODO!!! css if you are not lazy
     }
 }

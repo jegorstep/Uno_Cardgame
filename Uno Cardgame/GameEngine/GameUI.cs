@@ -128,9 +128,9 @@ public class GameUI
         if (!shortGame)
         {
             Console.WriteLine("Counting Points...");
-            Thread.Sleep(5000);
+            // Thread.Sleep(5000);
             Console.WriteLine("Dealing cards...");
-            Thread.Sleep(2000);
+            // Thread.Sleep(2000);
             Console.WriteLine();
         }
     }

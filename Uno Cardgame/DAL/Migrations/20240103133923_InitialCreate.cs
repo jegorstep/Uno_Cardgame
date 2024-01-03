@@ -32,6 +32,7 @@ namespace DAL.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
                     GamePlayerId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    IsHuman = table.Column<bool>(type: "INTEGER", nullable: false),
                     GameId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>

@@ -39,7 +39,41 @@
         <!-- Dynamically generated input fields for real players will be placed here -->
     </div>
 
+    <!-- Add a dropdown for selecting the player who will play first -->
+        <label for="firstPlayer">Select the Player Who Will Play First:</label>
+    <select id="firstPlayer" name="FirstPlayer">
+        <!-- Options will be dynamically added here based on the totalPlayers selection -->
+    </select>
+    
+    <!-- Add a section for custom rules -->
+        <label for="customRules">Do you want custom rules?</label>
+    <select id="customRules" name="CustomRules" onchange="toggleCustomRules()">
+        <option value="false">No</option>
+        <option value="true">Yes</option>
+    </select>
+    
+        <!-- Add yes/no selection inputs for custom rule 1 -->
+        <label for="customRule1" id="customRule1Label">Short Game</label>
+    <select id="customRule1" name="CustomRule1">
+        <option value="false">No</option>
+        <option value="true">Yes</option>
+    </select>
+    
+        <!-- Add yes/no selection inputs for custom rule 2 -->
+        <label for="customRule2" id="customRule2Label">Swap 7 rule</label>
+    <select id="customRule2" name="CustomRule2">
+        <option value="false">No</option>
+        <option value="true">Yes</option>
+    </select>
+    
+        <!-- Add an input option for the amount of cards -->
+        <label for="cardsAmount" id ="cardsAmountLabel">Amount of Cards (1-10):</label>
+        <input type="number" id="cardsAmount" name="CardsAmount" min="1" max="10" />
+
+    
     <button type="submit">Start Game</button>
+    
+    
 </form>
 
 @if (Model.AllPlayerNames != null) {
@@ -64,7 +98,21 @@ foreach (var player in Model.AllPlayerNames)
             option.text = i;
             humanPlayersDropdown.appendChild(option);
         }
+         let firstPlayerDropdown = document.getElementById("firstPlayer");
+                firstPlayerDropdown.innerHTML = "";
+                for (let i = 1; i <= totalPlayers; i++) {
+                    let option = document.createElement("option");
+                    option.value = i;
+                    option.text = "Player " + i;
+                    firstPlayerDropdown.appendChild(option);
+                }
+                let option = document.createElement("option");
+                option.value = parseInt(totalPlayers) + 1;
+                option.text = "Random";
+                firstPlayerDropdown.appendChild(option);
     }
+    
+    
     function generateRealPlayerInputs() {
             let totalPlayers = document.getElementById("humanPlayers").value;
             let realPlayerContainer = document.getElementById("realPlayerInputsContainer");
@@ -90,4 +138,36 @@ foreach (var player in Model.AllPlayerNames)
 
     // Initial call to update options based on the default value
     updateHumanPlayersOptions();
+    
+    function toggleCustomRules() {
+            let customRulesSelect = document.getElementById("customRules");
+            let customRule1Label = document.getElementById("customRule1Label");
+            let customRule1Select = document.getElementById("customRule1");
+            let customRule2Label = document.getElementById("customRule2Label");
+            let customRule2Select = document.getElementById("customRule2");
+            let cardsAmountLabel = document.getElementById("cardsAmountLabel");
+            let cardsAmount = document.getElementById("cardsAmount");
+    
+            if (customRulesSelect.value === "true") {
+                // Show custom rules if the user wants custom rules
+                customRule1Label.style.display = "inline-block";
+                customRule1Select.style.display = "inline-block";
+                customRule2Label.style.display = "inline-block";
+                customRule2Select.style.display = "inline-block";
+                cardsAmountLabel.style.display = "inline-block";
+                cardsAmount.style.display = "inline-block";
+            } else {
+                // Hide custom rules if the user doesn't want custom rules
+                customRule1Label.style.display = "none";
+                customRule1Select.style.display = "none";
+                customRule2Label.style.display = "none";
+                customRule2Select.style.display = "none";
+                cardsAmountLabel.style.display = "none";
+                cardsAmount.style.display = "none";
+            }
+        }
+    
+        // Initial call to set the initial state based on the default value
+        toggleCustomRules();
+    
 </script>

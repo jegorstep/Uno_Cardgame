@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231230170822_InitialCreate")]
+    [Migration("20240103133923_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -52,6 +52,9 @@ namespace DAL.Migrations
 
                     b.Property<Guid?>("GamePlayerId")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsHuman")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()

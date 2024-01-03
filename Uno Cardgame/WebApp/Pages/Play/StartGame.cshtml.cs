@@ -11,8 +11,16 @@ public class StartGame : PageModel
 
     [BindProperty]
     public List<string>? AllPlayerNames { get; set; }
+    
+    [BindProperty] public int FirstPlayer { get; set;}
+    [BindProperty] public int CardsAmount { get; set; }
+    [BindProperty] public bool CustomRules { get; set; }
+    [BindProperty] public bool CustomRule1 { get; set; }
+    [BindProperty] public bool CustomRule2 { get; set; }
+
 
     public string? ErrorMessage;
+    
     
     public void OnGet()
     {
@@ -34,8 +42,14 @@ public class StartGame : PageModel
             return Page();
         }
 
-        Game game = new Game(AllPlayerNames.Count, "official");
-        game.SetUpGame(AllPlayerNames, realPlayersCount);
+        string gameType = "official";
+        if (CustomRules)
+        {
+            gameType = "custom";
+        }
+
+        Game game = new Game(AllPlayerNames.Count, "Official");
+        game.SetUpGame(AllPlayerNames, realPlayersCount, FirstPlayer, gameType, CustomRule1, CustomRule2, CardsAmount);
         game.SaveGame();
         
         return Redirect("/Games/Index");
@@ -46,7 +60,14 @@ public class StartGame : PageModel
         bool minLength = false;
         bool maxLength = false;
         bool copyNames = false;
+        bool cardAmountEmpty = false;
+        
         ErrorMessage = "";
+        if (CustomRules && CardsAmount == 0)
+        {
+            ErrorMessage += "Choose amount of cards you want to play with!\n";
+            cardAmountEmpty = true;
+        }
         foreach (string player in AllPlayerNames!)
         {
             string playerString = player.Trim(); 
@@ -77,7 +98,7 @@ public class StartGame : PageModel
             }
         }
 
-        return minLength || maxLength || copyNames;
+        return minLength || maxLength || copyNames || cardAmountEmpty;
     }
 
 }

@@ -20,9 +20,9 @@ public class GameState
     public bool SwappingCards { get; set; } = false;
     
     
-    public string GetNameOfActivePlayer()
+    public Player GetActivePlayer()
     {
-        return Players[IndexOfActivePlayer].Name;
+        return Players[IndexOfActivePlayer];
     }
 
 }

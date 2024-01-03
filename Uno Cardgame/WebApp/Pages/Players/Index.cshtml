@@ -12,16 +12,16 @@
 </p>
 <table class="table">
     <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Player[0].Name)
-            </th>
-            <th></th>
-            <th></th>
-        </tr>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Player[0].Name)
+        </th>
+        <th></th>
+        <th></th>
+    </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Player) {
+    @foreach (var item in Model.Player) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
@@ -32,6 +32,6 @@
                 <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@item.Name">Play as</a>
             </td>
         </tr>
-}
+    }
     </tbody>
 </table>

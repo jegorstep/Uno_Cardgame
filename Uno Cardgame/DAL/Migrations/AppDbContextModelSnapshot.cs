@@ -50,6 +50,9 @@ namespace DAL.Migrations
                     b.Property<Guid?>("GamePlayerId")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsHuman")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
