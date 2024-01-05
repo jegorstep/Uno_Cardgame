@@ -54,4 +54,10 @@ public class GameRepositoryEF : IGameRepository
         var game = _ctx.Games.First(g => g.Id == id);
         return JsonSerializer.Deserialize<GameState>(game.State, JsonHelpers.JsonSerializerOptions)!;
     }
+
+    public void DeleteGame(Guid id)
+    {
+        var game = _ctx.Games.First(g => g.Id == id);
+        _ctx.Games.Remove(game);
+    }
 }

@@ -8,7 +8,7 @@
 
 <link rel="stylesheet" href="/css/site.css">
 
-<h1 class="text-center">Play</h1>
+<h1 class="text-center display-4">Play</h1>
 <h5>Reload Page in <span id="reload-label">-</span></h5>
 
 <div> <a asp-page="/Play/Log" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name">Log</a></div>
@@ -22,8 +22,31 @@
     @Model.Player!.Points
 </div>
 
-<table>
-    
+<table width="40%" border="1">
+    <tr>
+        <td>
+            Name:
+        </td>
+        <td>
+            Points:
+        </td>
+        <td>
+            Cards in Hand:
+        </td>
+    </tr>
+    @foreach (Player player in Model.GameState.Players)
+    {
+        <tr>
+            <td>@player.Name</td>
+            <td>@player.Points</td>
+            <td>@player.Hand.Count</td>
+        </tr>
+    }
+    <tr>
+        <td>Cards in Deck</td>
+        <td></td>
+        <td>@Model.GameState.Deck.GetDeck.Count</td>
+    </tr>
 </table>
 
 <div>

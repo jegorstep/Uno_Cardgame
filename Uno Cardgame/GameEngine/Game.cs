@@ -387,9 +387,8 @@ public class Game
             
             
         // if file save system
-        // _saveSystem = new GameRepositoryFileSystem();
+        // IGameRepository _gameRepository = new GameRepositoryFileSystem();
         // end of file save system
-        
         
         
         Console.WriteLine();
@@ -511,18 +510,18 @@ public class Game
                     ErrorMessage += "Name length must be not longer than 20 letters!\n";
                     maxLength = true;
                 }
-
-                else if (names.Count != names.Distinct().Count())
-                {
-                    ErrorMessage += "No duplicates allowed!\n";
-                    copyNames = true;
-                }
+            }
+            if (names.Count != names.Distinct().Count())
+            {
+                ErrorMessage += "No duplicates allowed!\n";
+                copyNames = true;
             }
 
             if (!copyNames && !maxLength && !minLength)
             {
                 break;
             }
+            Console.WriteLine(ErrorMessage);
         }
 
         foreach (var player in tempPlayersList)
