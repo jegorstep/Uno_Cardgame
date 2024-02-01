@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using DAL;
+﻿using DAL;
 using Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +26,7 @@ public class Game
                 _gameState.ShortGame = true;
             }
 
-            string[] maxAmountOfCards = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+            string[] maxAmountOfCards = { "1", "2", "3", "4" };
             answer = _gameUi.UniversalMenu("How many cards will be in your hand?", maxAmountOfCards);
             _gameState.MaxCardsInHand = answer + 1;
 
@@ -54,6 +53,7 @@ public class Game
         if (_isNewGame)
         {
             SetUpGame();
+            _isNewGame = false;
         }
             
         Console.Clear();
@@ -578,7 +578,6 @@ public class Game
     {
         if (gameType.ToLower() == "custom")
         {
-            
             _gameState.ShortGame = shortGame;
             _gameState.SwappingCards = swapRule;
             _gameState.MaxCardsInHand = cardsAmount;
@@ -627,11 +626,6 @@ public class Game
             {
                 _gameUi.PrintWinnerOfRound(player.Name, _gameState.ShortGame);
                 _gameState.Log += player.Name + " is a winner of the round!";
-                if (!_gameState.ShortGame)
-                { 
-                    _gameState.Deck.SetUpDeck();
-                    DealCard();
-                }
                 return player;
             }
         }
@@ -640,7 +634,6 @@ public class Game
 
     public bool CountPoints(Player? player)
     {
-        
         if (player == null)
         {
             return false;
@@ -672,6 +665,11 @@ public class Game
                             player.Points += (int)card.CardValue;
                             break;
                     }
+                }
+                if (!_gameState.ShortGame)
+                { 
+                    _gameState.Deck.SetUpDeck();
+                    DealCard();
                 }
             }
         }

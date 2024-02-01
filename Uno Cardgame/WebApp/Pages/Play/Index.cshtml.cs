@@ -103,7 +103,7 @@ public class Index : PageModel
                 return Redirect("/Play?gameId=" + GameId + "&name=" + Name);
             }
         }
-        else
+        else if (winner.Name.Equals(Name))
         {
             if (GameEngine.CountPoints(winner)) 
             {
@@ -111,7 +111,7 @@ public class Index : PageModel
                 return Redirect("/Play/Gameover?gameId=" + GameId + "&name=" + Name + "&winner=" + winner.Name); 
             }
             GameEngine.SaveGame();
-            return Redirect("/Play/Log?gameId=" + GameId + "&name=" + Name + "&winner=" + winner.Name); 
+            return Redirect("/Play/Index?gameId=" + GameId + "&name=" + Name); 
         }
         return Page();
     }

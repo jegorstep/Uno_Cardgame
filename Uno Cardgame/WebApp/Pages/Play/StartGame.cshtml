@@ -2,10 +2,11 @@
 @model WebApp.Pages.Play.StartGame
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Game Setup";
 }
 
-<h1 class="text-center">Choose Options for new game</h1>
+<h1 class="text-center">Game Options</h1>
+
 
 @if (Model.ErrorMessage != null)
 {
@@ -14,74 +15,99 @@
         <div class="text-danger">@line</div>
     }
 }
-
 <form method="post">
-    <label for="totalPlayers">Total Number of Players:</label>
-    <select id="totalPlayers" name="TotalPlayers" onchange="updateHumanPlayersOptions()">
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-        <!-- Add more options as needed -->
-    </select>
-
-    <label for="humanPlayers">Total Number of Human Players:</label>
-    <select id="humanPlayers" name="HumanPlayers">
-        <!-- Options will be dynamically added here based on the totalPlayers selection -->
-    </select>
-
-    <div id="realPlayerInputsContainer">
-        <!-- Dynamically generated input fields for real players will be placed here -->
+    <div class="form-row">
+        <div class="form-label">
+            <label for="totalPlayers">Total Players:</label>
+        </div>
+        <div class="form-input">
+            <select id="totalPlayers" name="TotalPlayers" onchange="updateHumanPlayersOptions()">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-label">
+            <label for="humanPlayers">Human Players:</label>
+        </div>
+        <div class="form-input">
+            <select id="humanPlayers" name="HumanPlayers">
+                <!-- Options will be dynamically added here based on the totalPlayers selection -->
+            </select>
+        </div>
     </div>
 
+    <div id="realPlayerInputsContainer" class="players-input">
+        <!-- Dynamically generated input fields for real players will be placed here -->
+    </div>
+    
     <!-- Add a dropdown for selecting the player who will play first -->
-        <label for="firstPlayer">Select the Player Who Will Play First:</label>
-    <select id="firstPlayer" name="FirstPlayer">
-        <!-- Options will be dynamically added here based on the totalPlayers selection -->
-    </select>
+    <div class="form-row">
+        <div class="form-label">
+            <label for="firstPlayer">First to play:</label>
+        </div>
+        <div class="form-input">
+            <select id="firstPlayer" name="FirstPlayer">
+                <!-- Options will be dynamically added here based on the totalPlayers selection -->
+            </select>
+        </div>
+    </div>
     
     <!-- Add a section for custom rules -->
-        <label for="customRules">Do you want custom rules?</label>
-    <select id="customRules" name="CustomRules" onchange="toggleCustomRules()">
-        <option value="false">No</option>
-        <option value="true">Yes</option>
-    </select>
+    <div class="form-row">
+        <div class="form-label">
+            <label for="customRules">Custom Rules:</label>
+        </div>
+        <div class="form-input">
+            <select id="customRules" name="CustomRules" onchange="toggleCustomRules()">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+            </select>
+        </div>
+    </div>
     
         <!-- Add yes/no selection inputs for custom rule 1 -->
-        <label for="customRule1" id="customRule1Label">Short Game</label>
-    <select id="customRule1" name="CustomRule1">
-        <option value="false">No</option>
-        <option value="true">Yes</option>
-    </select>
+    <div class="form-row">
+        <div class="form-label">
+            <label for="customRule1" id="customRule1Label">Short Game:</label>
+        </div>
+        <div class="form-input">
+            <select id="customRule1" name="CustomRule1">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+            </select>
+        </div>
+    </div>
     
         <!-- Add yes/no selection inputs for custom rule 2 -->
-        <label for="customRule2" id="customRule2Label">Swap 7 rule</label>
-    <select id="customRule2" name="CustomRule2">
-        <option value="false">No</option>
-        <option value="true">Yes</option>
-    </select>
+    <div class="form-row">
+        <div class="form-label">
+            <label for="customRule2" id="customRule2Label">Swap 7 rule:</label>
+        </div>
+        <div class="form-input">
+            <select id="customRule2" name="CustomRule2">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+            </select>
+        </div>
+    </div>
     
         <!-- Add an input option for the amount of cards -->
-        <label for="cardsAmount" id ="cardsAmountLabel">Amount of Cards (1-10):</label>
-        <input type="number" id="cardsAmount" name="CardsAmount" min="1" max="10" />
-
-    
+    <div class="form-row">
+        <div class="form-label">
+            <label for="cardsAmount" id ="cardsAmountLabel">Amount of Cards (1-10):</label>
+        </div>
+        <div class="form-input">
+            <input type="number" id="cardsAmount" name="CardsAmount" min="1" max="10" />
+        </div>
+    </div>
+    <div align="center">
     <button type="submit">Start Game</button>
-    
-    
+    </div>
 </form>
-
-@if (Model.AllPlayerNames != null) {
-foreach (var player in Model.AllPlayerNames)
-{
-    <td>@player</td>
-}
-}
 
 <script>
     function updateHumanPlayersOptions() {
@@ -98,76 +124,80 @@ foreach (var player in Model.AllPlayerNames)
             option.text = i;
             humanPlayersDropdown.appendChild(option);
         }
-         let firstPlayerDropdown = document.getElementById("firstPlayer");
-                firstPlayerDropdown.innerHTML = "";
-                for (let i = 1; i <= totalPlayers; i++) {
-                    let option = document.createElement("option");
-                    option.value = i;
-                    option.text = "Player " + i;
-                    firstPlayerDropdown.appendChild(option);
-                }
-                let option = document.createElement("option");
-                option.value = parseInt(totalPlayers) + 1;
-                option.text = "Random";
-                firstPlayerDropdown.appendChild(option);
-    }
-    
-    
-    function generateRealPlayerInputs() {
-            let totalPlayers = document.getElementById("humanPlayers").value;
-            let realPlayerContainer = document.getElementById("realPlayerInputsContainer");
-    
-            // Clear previous content
-            realPlayerContainer.innerHTML = "";
-    
-            // Generate input fields for real players
-            for (let i = 0; i < totalPlayers; i++) {
-                let input = document.createElement("input");
-                input.type = "text";
-                input.name = "AllPlayerNames";
-                input.placeholder = "Enter name for Player " + (i + 1);
-                realPlayerContainer.appendChild(input);
-                realPlayerContainer.appendChild(document.createElement("br"));
-            }
-        }
-        
-        document.getElementById("humanPlayers").addEventListener("change", generateRealPlayerInputs);
-    
-        // Initial call to generate input fields based on the default value
+
+        // Trigger the generation of real player inputs when the total number of players changes
         generateRealPlayerInputs();
+        
+        let firstPlayerDropdown = document.getElementById("firstPlayer");
+        firstPlayerDropdown.innerHTML = "";
+        for (let i = 1; i <= totalPlayers; i++) {
+            let option = document.createElement("option");
+            option.value = i;
+            option.text = "Player " + i;
+            firstPlayerDropdown.appendChild(option);
+        }
+        let option = document.createElement("option");
+        option.value = parseInt(totalPlayers) + 1;
+        option.text = "Random";
+        firstPlayerDropdown.appendChild(option);
+    }
+
+    function generateRealPlayerInputs() {
+        let totalPlayers = document.getElementById("humanPlayers").value;
+        let realPlayerContainer = document.getElementById("realPlayerInputsContainer");
+
+        // Clear previous content
+        realPlayerContainer.innerHTML = "";
+
+        // Generate input fields for real players
+        for (let i = 0; i < totalPlayers; i++) {
+            let input = document.createElement("input");
+            input.type = "text";
+            input.name = "AllPlayerNames";
+            input.placeholder = "Enter name for Player " + (i + 1);
+            input.className = "name-input";
+            realPlayerContainer.appendChild(input);
+            realPlayerContainer.appendChild(document.createElement("br"));
+        }
+    }
+
+    document.getElementById("humanPlayers").addEventListener("change", generateRealPlayerInputs);
+
+    // Initial call to generate input fields based on the default value
+    generateRealPlayerInputs();
 
     // Initial call to update options based on the default value
     updateHumanPlayersOptions();
-    
+
     function toggleCustomRules() {
-            let customRulesSelect = document.getElementById("customRules");
-            let customRule1Label = document.getElementById("customRule1Label");
-            let customRule1Select = document.getElementById("customRule1");
-            let customRule2Label = document.getElementById("customRule2Label");
-            let customRule2Select = document.getElementById("customRule2");
-            let cardsAmountLabel = document.getElementById("cardsAmountLabel");
-            let cardsAmount = document.getElementById("cardsAmount");
-    
-            if (customRulesSelect.value === "true") {
-                // Show custom rules if the user wants custom rules
-                customRule1Label.style.display = "inline-block";
-                customRule1Select.style.display = "inline-block";
-                customRule2Label.style.display = "inline-block";
-                customRule2Select.style.display = "inline-block";
-                cardsAmountLabel.style.display = "inline-block";
-                cardsAmount.style.display = "inline-block";
-            } else {
-                // Hide custom rules if the user doesn't want custom rules
-                customRule1Label.style.display = "none";
-                customRule1Select.style.display = "none";
-                customRule2Label.style.display = "none";
-                customRule2Select.style.display = "none";
-                cardsAmountLabel.style.display = "none";
-                cardsAmount.style.display = "none";
-            }
+        let customRulesSelect = document.getElementById("customRules");
+        let customRule1Label = document.getElementById("customRule1Label");
+        let customRule1Select = document.getElementById("customRule1");
+        let customRule2Label = document.getElementById("customRule2Label");
+        let customRule2Select = document.getElementById("customRule2");
+        let cardsAmountLabel = document.getElementById("cardsAmountLabel");
+        let cardsAmount = document.getElementById("cardsAmount");
+
+        if (customRulesSelect.value === "true") {
+            // Show custom rules if the user wants custom rules
+            customRule1Label.style.display = "inline-block";
+            customRule1Select.style.display = "inline-block";
+            customRule2Label.style.display = "inline-block";
+            customRule2Select.style.display = "inline-block";
+            cardsAmountLabel.style.display = "inline-block";
+            cardsAmount.style.display = "inline-block";
+        } else {
+            // Hide custom rules if the user doesn't want custom rules
+            customRule1Label.style.display = "none";
+            customRule1Select.style.display = "none";
+            customRule2Label.style.display = "none";
+            customRule2Select.style.display = "none";
+            cardsAmountLabel.style.display = "none";
+            cardsAmount.style.display = "none";
         }
-    
-        // Initial call to set the initial state based on the default value
-        toggleCustomRules();
-    
+    }
+
+    // Initial call to set the initial state based on the default value
+    toggleCustomRules();
 </script>
+

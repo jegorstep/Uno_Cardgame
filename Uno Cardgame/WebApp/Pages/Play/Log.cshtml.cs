@@ -40,25 +40,6 @@ public class Log : PageModel
         {
             LoggedInfo = GameState.Log.Split("\n");
         }
-        
-        if (Winner != null)
-        {
-            Player winnerObject = default!;
-            foreach (var player in GameState.Players)
-            {
-                if (player.Name.Equals(Winner))
-                {
-                    winnerObject = player;
-                }
-            }
-            if (game.CountPoints(winnerObject))
-            {
-                game.SaveGame();
-                return Redirect("/Play/GameOver?gameId=" + GameId + "&name=" + Name);
-            }
-            game.SaveGame();
-            return Redirect("/Play/Index?gameId=" + GameId + "&name=" + Name);
-        }
         return Page();
     }
 }

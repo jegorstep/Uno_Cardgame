@@ -52,7 +52,7 @@ public class DeckOfCards : Card
         Card temp;
         
         //run the shuffle 1000 times
-        for (int shuffleTimes = 0; shuffleTimes < 1000; shuffleTimes++)
+        for (int shuffleTimes = 0; shuffleTimes < 10; shuffleTimes++)
         {
             for (int i = 0; i < NumberOfCards; i++)
             {

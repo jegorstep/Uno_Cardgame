@@ -62,7 +62,7 @@ public class Card
         }
         if ((int)value == 12)
         {
-            return "DT";
+            return "2+";
         }
         else if ((int)value == 13)
         {
@@ -70,7 +70,7 @@ public class Card
         }
         else if ((int)value == 14)
         {
-            return "WD4";
+            return "4+";
         }
         return ((int)value).ToString();
     }

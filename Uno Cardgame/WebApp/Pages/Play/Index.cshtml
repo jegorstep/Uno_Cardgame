@@ -3,140 +3,137 @@
 @model WebApp.Pages.Play.Index
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "On Going Game";
 }
 
 <link rel="stylesheet" href="/css/site.css">
 
 <h1 class="text-center display-4">Play</h1>
-<h5>Reload Page in <span id="reload-label">-</span></h5>
+<h5 hidden="hidden"><span id="reload-label"></span></h5>
+
+<body>
+
+<table class="game-table">
+    <tr>
+        <td class="table-block">
+            Name
+        </td>
+        <td class="table-block">
+            Cards
+        </td>
+        <td class="table-block">
+            Points
+        </td>
+    </tr>
+    @foreach (Player player in Model.GameState.Players)
+    {
+        <tr>
+            <td class="table-block">
+                @player.Name
+            </td>
+            <td class="table-block">
+                @player.Hand.Count
+            </td>
+            <td class="table-block">
+                @player.Points
+            </td>
+        </tr>
+    }
+</table>
 
 <div> <a asp-page="/Play/Log" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name">Log</a></div>
 
 <div>
-    <td>Active Player:</td>
-    @Model.GameState.GetActivePlayer().Name
+    @Model.GameState.GetActivePlayer().Name, it is your turn!
 </div>
 <div>
     <td>Your Points:</td>
     @Model.Player!.Points
 </div>
 
-<table width="40%" border="1">
-    <tr>
-        <td>
-            Name:
-        </td>
-        <td>
-            Points:
-        </td>
-        <td>
-            Cards in Hand:
-        </td>
-    </tr>
-    @foreach (Player player in Model.GameState.Players)
-    {
-        <tr>
-            <td>@player.Name</td>
-            <td>@player.Points</td>
-            <td>@player.Hand.Count</td>
-        </tr>
-    }
-    <tr>
-        <td>Cards in Deck</td>
-        <td></td>
-        <td>@Model.GameState.Deck.GetDeck.Count</td>
-    </tr>
-</table>
 
-<div>
-    <td>Your cards:</td>
-    @foreach (var person in Model.GameState.Players)
-    {
-        if (Model.Name == person.Name)
-        {
-            <div class="card-container">
-            @foreach (var card in person.Hand)
-            {
-                <div class="card num-@card.IntValue(card.CardValue) @card.CardColor.ToString().ToLower()"
-                     id="@card.CardColor.ToString().ToLower()">
-                    <span class="inner"><span class="mark">@card.IntValue(card.CardValue)</span></span>
-                </div>
-            }
-            </div>
-        }
-    }
+<td>Last Card on DiscardPile: </td>
+<div class="card-discard-pile">
+    <div class="card num-@Model.GameState.LastCardOnDiscardPile!.IntValue(Model.GameState.LastCardOnDiscardPile.CardValue) @Model.GameState.LastCardOnDiscardPile!.CardColor.ToString().ToLower()" id="@Model.GameState.LastCardOnDiscardPile.CardColor.ToString().ToLower()">
+        <span class="inner">
+            <span class="mark">@Model.GameState.LastCardOnDiscardPile.IntValue(Model.GameState.LastCardOnDiscardPile.CardValue)
+            </span>
+        </span>
+    </div>
 </div>
 
-@if (Model.GameState.GetActivePlayer().Name == Model.Name)
-{
-    <td>Possible Moves: </td>
-    <div class="card-container">
-        @if (Model.GameEngine.PossibleMoves(Model.Player!.Hand).Count == 0)
-        {
-            <p>You don't have possible moves, </p>
-            <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
-               asp-route-takeCard="true">Take Card</a>
-            <p> (If card is playable, you will play it automatically, unless it is not playable)</p>
-        }
-        else
-        {
-            foreach (var card in Model.GameEngine.PossibleMoves(Model.Player!.Hand))
-            {
-                if (card.CardColor == Card.Color.Wild)
-                {
-                @* <a asp-page="/Play/Wild" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name" *@
-                @*    asp-route-card="@card.ToString()">@card.ToString()</a> *@
-                    <div class="card num-@card.IntValue(card.CardValue) @card.CardColor.ToString().ToLower()"
-                         id="@card.CardColor.ToString().ToLower()">
-                        <span class="inner">
-                            <span class="mark">
-                                <a asp-page="/Play/Wild" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
-                                   asp-route-card="@card.ToString()">@card.IntValue(card.CardValue)</a>
-                            </span></span>
-                    </div>
-                }
-                else if (Model.GameState.SwappingCards && card.CardValue == Card.Value.Seven)
-                {
-                @* <a asp-page="/Play/Swap" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name" *@
-                @*    asp-route-card="@card.ToString()">@card.ToString()</a> *@
-                    <div class="card num-@card.IntValue(card.CardValue) @card.CardColor.ToString().ToLower()"
-                         id="@card.CardColor.ToString().ToLower()">
-                        <span class="inner">
-                            <span class="mark">
-                                <a asp-page="/Play/Swap" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
-                                   asp-route-card="@card.ToString()">@card.IntValue(card.CardValue)</a>
-                            </span></span>
-                    </div>
 
+<td>Your cards:</td>
+
+@foreach (var person in Model.GameState.Players)
+{
+    if (Model.Name == person.Name)
+    {
+        <div class="card-container">
+            @foreach (var card in person.Hand)
+            {
+                if (Model.GameEngine.PossibleMoves(Model.Player!.Hand).Contains(card) && Model.Name.Equals(Model.GameState.GetActivePlayer().Name))
+                {
+                    if (card.CardColor == Card.Color.Wild)
+                    {
+                        <div class="card num-@card.IntValue(card.CardValue) @card.CardColor.ToString().ToLower()"
+                             id="@card.CardColor.ToString().ToLower()">
+                            <span class="inner">
+                                <span class="mark">
+                                    <a asp-page="/Play/Wild" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+                                       asp-route-card="@card.ToString()">@card.IntValue(card.CardValue)</a>
+                                </span>
+                            </span>
+                        </div>
+
+                    }
+                    else if (Model.GameState.SwappingCards && card.CardValue == Card.Value.Seven)
+                    {
+                        <div class="card num-@card.IntValue(card.CardValue) @card.CardColor.ToString().ToLower()"
+                             id="@card.CardColor.ToString().ToLower()">
+                            <span class="inner">
+                                <span class="mark">
+                                    <a asp-page="/Play/Swap" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+                                       asp-route-card="@card.ToString()">@card.IntValue(card.CardValue)</a>
+                                </span>
+                            </span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card num-@card.IntValue(card.CardValue) @card.CardColor.ToString().ToLower()"
+                             id="@card.CardColor.ToString().ToLower()">
+                            <span class="inner">
+                                <span class="mark">
+                                    <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+                                       asp-route-card="@card.ToString()">@card.IntValue(card.CardValue)</a>
+                                </span>
+                            </span>
+                        </div>
+                    }
                 }
                 else
                 {
-                @* <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name" *@
-                @*    asp-route-card="@card.ToString()">@card.ToString()</a> *@
                     <div class="card num-@card.IntValue(card.CardValue) @card.CardColor.ToString().ToLower()"
                          id="@card.CardColor.ToString().ToLower()">
                         <span class="inner">
-                            <span class="mark">
-                                <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
-                                   asp-route-card="@card.ToString()">@card.IntValue(card.CardValue)</a>
-                            </span></span>
+                            <span class="mark">@card.IntValue(card.CardValue)
+                            </span>
+                        </span>
                     </div>
                 }
             }
-        }
-    </div>
+        </div>
+    }
+}
+@if (Model.GameEngine.PossibleMoves(Model.Player!.Hand).Count == 0 && Model.GameState.GetActivePlayer().Name.Equals(Model.Name))
+{
+    <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name"
+       asp-route-takeCard="true"> <img alt="Take Card" src="button_take-card.png"></a>
+    <p> (If card is playable, you will play it automatically, unless it is not playable)</p>
 }
 
-
-<td>Last Card on DiscardPile: </td>
-<div>
-        <div class="card num-@Model.GameState.LastCardOnDiscardPile!.IntValue(Model.GameState.LastCardOnDiscardPile.CardValue) @Model.GameState.LastCardOnDiscardPile!.CardColor.ToString().ToLower()" id="@Model.GameState.LastCardOnDiscardPile.CardColor.ToString().ToLower()">
-        <span class="inner"><span class="mark">@Model.GameState.LastCardOnDiscardPile.IntValue(Model.GameState.LastCardOnDiscardPile.CardValue)</span></span>
-        </div>
-</div>
-
-
+</body>
 
 
 
@@ -172,7 +169,7 @@
 @section Scripts
 {
     <script>
-    let timerValue = 3
+    let timerValue = 5
     let timerLabel = document.querySelector("#reload-label")
     setInterval(() => {
         timerValue--;
@@ -180,7 +177,7 @@
         if (timerValue<= 0) {
         window.location.reload()
         }
-       }, 1000)  
+       }, 1000)
     </script>
 }
     

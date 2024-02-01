@@ -1,14 +1,14 @@
 @page
-@using Domain
 @model WebApp.Pages.Play.Log
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Log";
 }
 
 <h1 class="text-center display-4">Log</h1>
 
 <div>
+    <a asp-page="/Play/Index" asp-route-gameId="@Model.GameId" asp-route-name="@Model.Name" title="Return To Game">Return To Game</a>
     @if (Model.LoggedInfo != null)
     {
         foreach (var info in Model.LoggedInfo)

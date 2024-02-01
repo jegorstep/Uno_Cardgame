@@ -70,7 +70,7 @@ public class StartGame : PageModel
         }
         foreach (string player in AllPlayerNames!)
         {
-            string playerString = player.Trim(); 
+            string playerString = player; 
             if (playerString == null)
             {
                 if (!ErrorMessage.Contains("Name length must be longer than 2 letters"))

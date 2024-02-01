@@ -7,7 +7,7 @@
 <style>
     /* Optional: Apply styles to enhance the link appearance */
     a {
-        color: #3498db; 
+        color: black; 
         text-decoration: none; 
         transition: color 0.3s ease; 
     }
@@ -19,14 +19,31 @@
     .line-break {
         margin-top: 150px; /* Adjust the margin as needed */
     }
+   
+    .image-container {
+          display: flex;
+          width: 100%;
+          justify-content: center;
+    }
+    
+    .left-image, .right-image {
+          flex: 1;
+          height: auto;
+          max-width: 100%;
+    }
+   
 </style>
-
-<div class="text-center">
-    <h1 class="display-4">UNO</h1>
-</div>
-
-<div class="text-center">
-    <h3 class="line-break"><a asp-page="/Play/StartGame">New Game</a></h3>
-    @* TODO!!! create page for new Game *@
-    <h3><a asp-page="/Games/Index">Load Game</a></h3>
+<div class="image-container">
+    <div class="left-image">
+        <img alt="Play Image" src="Play.png" height="250" width="250">
+        <a asp-page="/Play/StartGame">
+            <img alt="Play Button" src="button_new-game.png">
+        </a>
+    </div>
+    <div class="right-image">
+        <img alt="Load Game Image" src="cards.png" height="250" width="250">
+        <a asp-page="/Games/Index">
+             <img alt="Load Game Button" src="button_load-game.png">
+        </a>
+    </div>
 </div>

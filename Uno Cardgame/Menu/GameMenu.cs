@@ -112,13 +112,13 @@ public class GameMenu
                 .Options;
             using var db = new AppDbContext(contextOptions);
             db.Database.Migrate();
-            IGameRepository _gameRepository = new GameRepositoryEF(db);
+            _gameRepository = new GameRepositoryEF(db);
             // end of database code
             
             
             
             // if file save system
-            // IGameRepository _gameRepository = new GameRepositoryFileSystem();
+            // _gameRepository = new GameRepositoryFileSystem();
             // end of file save system
             
             
